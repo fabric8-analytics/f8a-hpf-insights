@@ -24,7 +24,7 @@ class S3DataStore(AbstractDataStore):
         self.bucket = self.s3_resource.Bucket(src_bucket_name)
 
     def get_name(self):
-    """Get the name that identifies the storage."""
+        """Get the name that identifies the storage."""
         return "S3:" + self.bucket_name
 
     def read_json_file(self, filename):
