@@ -1,14 +1,16 @@
+"""The Endpoint o serve model training and scoring."""
+
 import os
 import flask
 from flask import Flask, request
 from flask_cors import CORS
 from src.data_store.s3_data_store import S3DataStore
 from src.scoring.hpf_scoring import HPFScoring
-from src.config import(AWS_S3_ACCESS_KEY_ID,
-                       AWS_S3_SECRET_ACCESS_KEY,
-                       AWS_S3_BUCKET_NAME,
-                       HPF_SCORING_REGION,
-                       SCORING_THRESHOLD)
+from src.config import (AWS_S3_ACCESS_KEY_ID,
+                        AWS_S3_SECRET_ACCESS_KEY,
+                        AWS_S3_BUCKET_NAME,
+                        HPF_SCORING_REGION,
+                        SCORING_THRESHOLD)
 
 
 app = Flask(__name__)
@@ -58,10 +60,13 @@ def hpf_scoring():
         for input_stack in input_json:
             if input_stack["ecosystem"] != HPF_SCORING_REGION:
                 response_json.append(
-                    {"Error": "Ecosystems don't match. GIVEN:{} EXPECTED:{}".format(input_stack["ecosystem"], HPF_SCORING_REGION)})
+                    {"Error": "Ecosystems don't match. \
+                    GIVEN:{} EXPECTED:{}".format(input_stack["ecosystem"],
+                                                 HPF_SCORING_REGION)})
             else:
-                companion_recommendation, package_to_topic_dict,  missing_packages = app.scoring_object.predict(
-                    input_stack['package_list'])
+                companion_recommendation, package_to_topic_dict, missing_packages =\
+                    app.scoring_object.predict(
+                        input_stack['package_list'])
                 response_json.append({
                     "missing_packages": missing_packages,
                     "companion_packages": companion_recommendation,
@@ -71,6 +76,7 @@ def hpf_scoring():
     else:
         response_json.append({"Error": "No scoring region provided"})
     return flask.jsonify(response_json)
+
 
 if __name__ == "__main__":
     app.run()

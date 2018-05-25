@@ -1,3 +1,5 @@
+"""Class that represents AWS S3 based data storage."""
+
 import json
 import os
 import boto3
@@ -20,7 +22,8 @@ class S3DataStore(AbstractDataStore):
                 signature_version='s3v4'))
         else:
             self.s3_resource = self.session.resource('s3', config=botocore.client.Config(
-                signature_version='s3v4'), region_name="us-east-1", endpoint_url=AWS_S3_ENDPOINT_URL)
+                signature_version='s3v4'),
+                region_name="us-east-1", endpoint_url=AWS_S3_ENDPOINT_URL)
         self.bucket = self.s3_resource.Bucket(src_bucket_name)
 
     def get_name(self):
@@ -76,8 +79,8 @@ class S3DataStore(AbstractDataStore):
         return None
 
     def iterate_bucket_items(self, ecosystem='npm'):
-        """
-        Iterate over all objects in a given s3 bucket.
+        """Iterate over all objects in a given s3 bucket.
+
         See:
         https://boto3.readthedocs.io/en/latest/reference/services/s3.html#S3.Client.list_objects_v2
         for return data format
@@ -104,6 +107,7 @@ class S3DataStore(AbstractDataStore):
 
     def upload_folder_to_s3(self, folder_path, prefix=''):
         """Upload(Sync) a folder to S3.
+
         :folder_path: The local path of the folder to upload to s3
         :prefix: The prefix to attach to the folder path in the S3 bucket
         """

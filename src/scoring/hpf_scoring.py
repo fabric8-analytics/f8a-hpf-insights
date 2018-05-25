@@ -1,23 +1,27 @@
+"""The HPF Model scoring class."""
+
 import numpy as np
 import os
 from edward.models import Poisson
 from edward.models import Gamma
 import tensorflow as tf
 from collections import defaultdict
-from src.config import(SCORING_THRESHOLD,
-                       HPF_SCORING_REGION,
-                       HPF_output_package_id_dict,
-                       HPF_output_manifest_id_dict,
-                       HPF_output_rating_matrix,
-                       HPF_output_item_matrix,
-                       a, a_c, c, c_c,
-                       b_c, d_c, K)
+from src.config import (SCORING_THRESHOLD,
+                        HPF_SCORING_REGION,
+                        HPF_output_package_id_dict,
+                        HPF_output_manifest_id_dict,
+                        HPF_output_rating_matrix,
+                        HPF_output_item_matrix,
+                        a, a_c, c, c_c,
+                        b_c, d_c, K)
 
 
 class HPFScoring:
+    """The HPF Model scoring class."""
 
     def __init__(self, datastore=None, scoring_threshold=SCORING_THRESHOLD,
                  scoring_region=HPF_SCORING_REGION):
+        """Set the variables and load model data."""
         self.datastore = datastore
         self.scoring_threshold = scoring_threshold
         self.scoring_region = scoring_region
@@ -36,9 +40,10 @@ class HPFScoring:
         self.b_c = tf.constant(b_c)
         self.d_c = tf.constant(d_c)
         self.K = K
-        self.load()
+        self.loadS3()
 
-    def load(self):
+    def loadS3(self):
+        """Load the model data from AWS S3."""
         package_id_dict_filename = os.path.join(
             self.scoring_region, HPF_output_package_id_dict)
         self.package_id_dict = self.datastore.read_json_file(
@@ -64,6 +69,16 @@ class HPFScoring:
         self.rating_mean = self.rating_matrix.mean()
 
     def predict(self, input_stack):
+        """Prediction function.
+
+        :param input_stack: The user's package list
+        for which companion recommendation are to be generated.
+        :return companion_recommendation: The list of recommended companion packages
+        along with condifence score.
+        :return package_topic_dict: The topics associated with the packages
+        in the input_stack+recommendation.
+        :return missing_packages: The list of packages unknown to the HPF model.
+        """
         input_id_set = set()
         missing_packages = []
         for package_name in input_stack:
@@ -73,11 +88,16 @@ class HPFScoring:
         else:
             input_id_set.add(package_id)
         # TODO: Check for known-unknown ratio before recommending
-        companion_recommendation, package_topic_dict = self.get_recommendation(
+        companion_recommendation, package_topic_dict = self.folding_in(
             input_id_set)
         return companion_recommendation, package_topic_dict, missing_packages
 
     def match_manifest(self, input_id_set):
+        """Find a manifest list that matches user's input package list and return its index.
+
+        :param input_id_set: A set containing package ids of user's input package list.
+        :return manifest_id: The index of the matched manifest.
+        """
         for manifest_id, dependency_set in self.manifest_id_dict.items():
             if dependency_set == input_id_set:
                 break
@@ -85,7 +105,12 @@ class HPFScoring:
             manifest_id = -1
         return manifest_id
 
-    def get_recommendation(self, input_id_set):
+    def folding_in(self, input_id_set):
+        """Folding in logic for prediction.
+
+        :param  input_id_set: A set containing package ids of user's input package list.
+        :return: Filter companion recommendations and their topics.
+        """
         manifest_id = int(self.match_manifest(input_id_set))
         if manifest_id == -1:
             theta = []
@@ -101,6 +126,11 @@ class HPFScoring:
         return self.filter_recommendation(result)
 
     def normalize_result(self, result):
+        """Normalise the probability score of the resulting recommendation.
+
+        :param result: The Unnormalised recommendation result array.
+        :return result: The normalised recommendation result array.
+        """
         maxn = result.max()
         min_max = maxn - result.min()
         for i in range(self.packages):
@@ -108,6 +138,14 @@ class HPFScoring:
         return result
 
     def filter_recommendation(self, result):
+        """Filter companion recommendations based on sorted threshold score.
+
+        :param result: The unfiltered companion recommendation result.
+        :return companion_recommendation: The filtered list of recommended companion packges
+        along with condifence score.
+        :return package_topic_dict: The topics associated with the packages
+        in the input_stack+recommendation.
+        """
         recommendation = list(result.nonzero()[0])
         all_companion = {}
         companion_recommendation = []
