@@ -1,4 +1,4 @@
-"""The Endpoint o serve model training and scoring."""
+"""The Endpoint to serve model training and scoring."""
 
 import os
 import flask
