@@ -4,7 +4,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: hpf-insights:latest
+      #Using docker image for testing purpose
+      #TODO: change it f8a-image
+    image: docker.io/sara02/hpf-insights:latest
     network_mode: bridge
     entrypoint:
       - /bin/entrypoint.sh
