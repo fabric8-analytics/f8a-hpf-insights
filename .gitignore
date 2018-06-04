@@ -1,5 +1,6 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
+
 *.py[cod]
 *$py.class
 
@@ -102,3 +103,7 @@ ENV/
 
 # Intellij Idea
 .idea/
+
+config.py
+*env*/
+secret.yaml

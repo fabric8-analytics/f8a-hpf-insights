@@ -1,0 +1,29 @@
+"""The config file"""
+
+import os
+
+AWS_S3_ENDPOINT_URL = os.environ.get("AWS_S3_ENDPOINT_URL", "")
+SCORING_THRESHOLD = os.environ.get("SCORING_THRESHOLD", 0.5)
+HPF_SCORING_REGION = os.environ.get("HPF_SCORING_REGION", "maven")
+
+
+AWS_S3_ACCESS_KEY_ID = os.environ.get("AWS_S3_ACCESS_KEY_ID", "")
+AWS_S3_SECRET_ACCESS_KEY = os.environ.get("AWS_S3_SECRET_ACCESS_KEY", "")
+AWS_S3_BUCKET_NAME = os.environ.get("AWS_S3_BUCKET_NAME", "hpf-insights")
+
+
+SERVICE_PORT = "6006"
+SERVICE_TIMEOUT = "900"
+
+HPF_output_package_id_dict = "scoring/package_id_dict.json"
+HPF_output_manifest_id_dict = "scoring/manifest_id_dict.json"
+HPF_output_rating_matrix = "scoring/rating_matrix.npz"
+HPF_output_item_matrix = "scoring/item_matrix.npz"
+
+a = 0.5
+a_c = 0.5
+c = 0.5
+c_c = 0.5
+K = 10
+b_c = 0.99
+d_c = 0.99

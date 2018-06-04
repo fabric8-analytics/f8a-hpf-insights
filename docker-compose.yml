@@ -1,0 +1,25 @@
+version: "2"
+services:
+  hpf-insights:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      #Using docker image for testing purpose
+      #TODO: change it f8a-image
+    image: docker.io/sara02/hpf-insights:latest
+    network_mode: bridge
+    entrypoint:
+      - /bin/entrypoint.sh
+    environment:
+      AWS_S3_ACCESS_KEY_ID: "${AWS_S3_ACCESS_KEY_ID}"
+      AWS_S3_SECRET_ACCESS_KEY: "${AWS_S3_SECRET_ACCESS_KEY}"
+      AWS_S3_BUCKET_NAME: "${AWS_S3_BUCKET_NAME}"
+      AWS_S3_ENDPOINT_URL: "${AWS_S3_ENDPOINT_URL}"
+      HPF_SCORING_REGION: "${HPF_SCORING_REGION}"  # [ECOSYSTEM] - <maven/pypi/npm>
+      DEPLOYMENT_PREFIX: "${DEPLOYMENT_PREFIX}"  # <DEV/STAGE/PROD> - affects where the data and log for training gets stored.
+      SERVICE_PORT: "6006"
+      SERVICE_TIMEOUT: "900"
+      FLASK_LOGGING_LEVEL: "INFO"
+      PYTHONUNBUFFERED: 0
+    ports:
+        - "6006:6006"
