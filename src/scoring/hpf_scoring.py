@@ -1,6 +1,7 @@
 """The HPF Model scoring class."""
 
 import numpy as np
+from scipy import sparse
 import os
 from edward.models import Poisson
 from edward.models import Gamma
@@ -32,14 +33,10 @@ class HPFScoring:
         self.manifest_id_dict = None
         self.manifests = 0
         self.packages = 0
-        self.rating_mean = 0.0
-        self.a = tf.constant(a)
-        self.a_c = tf.constant(a_c)
-        self.c = tf.constant(c)
-        self.c_c = tf.constant(c_c)
-        self.b_c = tf.constant(b_c)
-        self.d_c = tf.constant(d_c)
         self.K = K
+        self.epsilon = Gamma(tf.constant(
+            a_c), tf.constant(a_c) / tf.constant(b_c))
+        self.theta_func = Gamma(tf.constant(a), self.epsilon)
         self.loadS3()
 
     def loadS3(self):
@@ -58,15 +55,18 @@ class HPFScoring:
         rating_matrix_filename = os.path.join(
             self.scoring_region, HPF_output_rating_matrix)
         self.datastore.download_file(
-            rating_matrix_filename, "/tmp/rating_matrix.npy")
-        self.rating_matrix = np.load("/tmp/rating_matrix.npy")
+            rating_matrix_filename, "/tmp/rating_matrix.npz")
+        sparse_matrix = sparse.load_npz('/tmp/rating_matrix.npz')
+        self.rating_matrix = sparse_matrix.toarray()
+        del(sparse_matrix)
         beta_matrix_filename = os.path.join(
             self.scoring_region, HPF_output_item_matrix)
         self.datastore.download_file(
-            beta_matrix_filename, "/tmp/beta_matrix.npy")
-        self.beta = np.load("/tmp/beta_matrix.npy")
+            beta_matrix_filename, "/tmp/item_matrix.npz")
+        sparse_matrix = sparse.load_npz('/tmp/item_matrix.npz')
+        self.beta = sparse_matrix.toarray()
+        del(sparse_matrix)
         self.manifests, self.packages = self.rating_matrix.shape
-        self.rating_mean = self.rating_matrix.mean()
 
     def predict(self, input_stack):
         """Prediction function.
@@ -81,14 +81,16 @@ class HPFScoring:
         """
         input_id_set = set()
         missing_packages = []
+        package_topic_dict = {}
         for package_name in input_stack:
             package_id = self.package_id_dict.get(package_name)
             if package_id is None:
                 missing_packages.append(package_name)
         else:
             input_id_set.add(package_id)
+            package_topic_dict[package_name] = []
         # TODO: Check for known-unknown ratio before recommending
-        companion_recommendation, package_topic_dict = self.folding_in(
+        companion_recommendation = self.folding_in(
             input_id_set)
         return companion_recommendation, package_topic_dict, missing_packages
 
@@ -115,9 +117,8 @@ class HPFScoring:
         if manifest_id == -1:
             theta = []
             with tf.Session() as sess:
-                epsilon = Gamma(self.a_c, self.a_c / self.b_c).eval()
-                theta_func = Gamma(self.a, epsilon).eval()
-                theta.append(epsilon * theta_func)
+                sess.run(self.theta_func)
+                theta.append(self.epsilon.eval() * self.theta_func.eval())
                 theta = np.array(theta * self.K)
                 result = Poisson(np.dot(theta, np.transpose(self.beta))).eval()
             result = self.normalize_result(result)
@@ -146,23 +147,15 @@ class HPFScoring:
         :return package_topic_dict: The topics associated with the packages
         in the input_stack+recommendation.
         """
-        recommendation = list(result.nonzero()[0])
-        all_companion = {}
+        highest_indices = result.argsort()[-11:-1]
         companion_recommendation = []
-        package_topic_dict = {}
-        for package_id in recommendation:
+        for package_id in highest_indices:
             prob_score = result[package_id]
-            if prob_score > self.scoring_threshold:
-                package_name = self.id_package_dict[package_id]
-                all_companion[package_name] = prob_score
-        sorted_result = sorted(all_companion.items(), key=lambda x: x[
-                               1], reverse=True)[:10]
-        for each_result in sorted_result:
+            package_name = self.id_package_dict[package_id]
             recommendation = {
-                "cooccurrence_probability": each_result[1] * 100,
-                "package_name": each_result[0],
+                "cooccurrence_probability": prob_score * 100,
+                "package_name": package_name,
                 "topic_list": []
             }
-            package_topic_dict[each_result[0]] = []
             companion_recommendation.append(recommendation)
-        return companion_recommendation, package_topic_dict
+        return companion_recommendation
