@@ -36,8 +36,6 @@ objects:
             value: "900"
           - name: HPF_SCORING_REGION
             value: "${HPF_SCORING_REGION}"
-          - name: USE_FILTERS
-            value: "${{USE_FILTERS}}"
           - name: AWS_S3_ENDPOINT_URL
             value: ""
           - name: AWS_S3_BUCKET_NAME
@@ -163,9 +161,3 @@ parameters:
   required: true
   name: REPLICAS
   value: "1"
-
-- description: User Post filters or not
-  displayName: User Post filters or not
-  required: true
-  name: USE_FILTERS
-  value: "True"

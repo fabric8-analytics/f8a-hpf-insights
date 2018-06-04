@@ -19,7 +19,6 @@ services:
       DEPLOYMENT_PREFIX: "${DEPLOYMENT_PREFIX}"  # <DEV/STAGE/PROD> - affects where the data and log for training gets stored.
       SERVICE_PORT: "6006"
       SERVICE_TIMEOUT: "900"
-      USE_FILTERS: "${USE_FILTERS}"
       FLASK_LOGGING_LEVEL: "INFO"
       PYTHONUNBUFFERED: 0
     ports:
