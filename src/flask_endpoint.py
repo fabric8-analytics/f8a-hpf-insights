@@ -33,10 +33,27 @@ else:
     app.scoring_status = False
 
 
+def list_routes():
+    """Return a list of routes for this app."""
+    return [str(rule) for rule in app.url_map.iter_rules()]
+
+
 @app.route('/')
 def heart_beat():
     """Handle the / REST API call."""
-    return flask.jsonify({"status": "ok"})
+    return flask.jsonify({"status": "ok", "routes": list_routes()})
+
+
+@app.route('/api')
+def api_routes():
+    """Handle the /api REST API call."""
+    return flask.jsonify({"routes": list_routes()})
+
+
+@app.route('/api/v1')
+def api_v1_routes():
+    """Handle the /api/v1 REST API call."""
+    return flask.jsonify({"routes": list_routes()})
 
 
 @app.route('/api/v1/liveness', methods=['GET'])

@@ -1,3 +1,4 @@
+"""Load Testing Companion Recommendation."""
 import json
 from locust import HttpLocust, TaskSet, events, task, web
 from collections import Counter
@@ -20,6 +21,7 @@ input_stack_list = [
 
 
 def get_packages():
+    """Generate random len input stack for load testing."""
     input_stack_len = len(input_stack_list)
     random.shuffle(input_stack_list)
     input_random_stack = random.sample(
@@ -43,8 +45,8 @@ class HPFInsightsBehaviour(TaskSet):
     @task
     def trigger_companion_recommendation_random_stack_len(self):
         """Simulate a stack analysis request."""
-
-        response = self.client.post("/api/v1/companion_recommendation", data=json.dumps(get_packages()),
+        response = self.client.post("/api/v1/companion_recommendation",
+                                    data=json.dumps(get_packages()),
                                     headers={'Content-type': 'application/json'})
 
         # Use the below lines for devcluster where we take into consideration the host pod as well.
