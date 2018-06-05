@@ -1,4 +1,4 @@
-directories="deployments src tests"
+directories="deployments src tests perf_tests"
 pass=0
 fail=0
 
