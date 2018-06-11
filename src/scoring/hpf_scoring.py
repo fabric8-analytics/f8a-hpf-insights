@@ -33,11 +33,15 @@ class HPFScoring:
         self.manifest_id_dict = None
         self.manifests = 0
         self.packages = 0
-        self.K = K
+        self.sess = tf.Session()
         self.epsilon = Gamma(tf.constant(
-            a_c), tf.constant(a_c) / tf.constant(b_c))
-        self.theta_func = Gamma(tf.constant(a), self.epsilon)
+            a_c), tf.constant(a_c) / tf.constant(b_c)).eval(session=self.sess)
+        self.theta = np.array([self.epsilon * Gamma(tf.constant(
+            a), self.epsilon).eval(session=self.sess)] * K)
         self.loadS3()
+        self.dummy_result = Poisson(
+            np.dot(self.theta, np.transpose(self.beta))).eval(session=self.sess)
+        self.normalize_result()
 
     def loadS3(self):
         """Load the model data from AWS S3."""
@@ -84,11 +88,12 @@ class HPFScoring:
         package_topic_dict = {}
         for package_name in input_stack:
             package_id = self.package_id_dict.get(package_name)
-            if package_id is None:
+            if package_id:
+                input_id_set.add(package_id)
+                package_topic_dict[package_name] = []
+            else:
                 missing_packages.append(package_name)
-        else:
-            input_id_set.add(package_id)
-            package_topic_dict[package_name] = []
+
         # TODO: Check for known-unknown ratio before recommending
         companion_recommendation = self.folding_in(
             input_id_set)
@@ -100,11 +105,10 @@ class HPFScoring:
         :param input_id_set: A set containing package ids of user's input package list.
         :return manifest_id: The index of the matched manifest.
         """
+        manifest_id = -1
         for manifest_id, dependency_set in self.manifest_id_dict.items():
             if dependency_set == input_id_set:
                 break
-        else:
-            manifest_id = -1
         return manifest_id
 
     def folding_in(self, input_id_set):
@@ -115,28 +119,27 @@ class HPFScoring:
         """
         manifest_id = int(self.match_manifest(input_id_set))
         if manifest_id == -1:
-            theta = []
-            with tf.Session() as sess:
-                sess.run(self.theta_func)
-                theta.append(self.epsilon.eval() * self.theta_func.eval())
-                theta = np.array(theta * self.K)
-                result = Poisson(np.dot(theta, np.transpose(self.beta))).eval()
-            result = self.normalize_result(result)
+            result = np.array(self.dummy_result)
         else:
             result = self.rating_matrix[manifest_id]
         return self.filter_recommendation(result)
 
-    def normalize_result(self, result):
+    def normalize_result(self):
         """Normalise the probability score of the resulting recommendation.
 
         :param result: The Unnormalised recommendation result array.
         :return result: The normalised recommendation result array.
         """
-        maxn = result.max()
-        min_max = maxn - result.min()
+        maxn = self.dummy_result.max()
+        min_max = maxn - self.dummy_result.min()
         for i in range(self.packages):
-            result[i] = (maxn - result[i]) / min_max
-        return result
+            value = 0
+            try:
+                value = (maxn - self.dummy_result[i]) / min_max
+            except Exception as e:
+                print(e)
+            finally:
+                self.dummy_result[i] = value
 
     def filter_recommendation(self, result):
         """Filter companion recommendations based on sorted threshold score.
@@ -147,14 +150,13 @@ class HPFScoring:
         :return package_topic_dict: The topics associated with the packages
         in the input_stack+recommendation.
         """
-        highest_indices = result.argsort()[-11:-1]
+        # TODO: Add a param for variable len of highest_indices
+        highest_indices = result.argsort()[-5:len(result)]
         companion_recommendation = []
         for package_id in highest_indices:
-            prob_score = result[package_id]
-            package_name = self.id_package_dict[package_id]
             recommendation = {
-                "cooccurrence_probability": prob_score * 100,
-                "package_name": package_name,
+                "cooccurrence_probability": result[package_id] * 100,
+                "package_name": self.id_package_dict[package_id],
                 "topic_list": []
             }
             companion_recommendation.append(recommendation)

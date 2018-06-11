@@ -72,6 +72,7 @@ def readiness():
 def hpf_scoring():
     """Endpoint to serve recommendations."""
     response_json = []
+    response_json_final = {"host_name": request.host, "result": response_json}
     if app.scoring_status:
         input_json = request.get_json()
         for input_stack in input_json:
@@ -81,18 +82,19 @@ def hpf_scoring():
                     GIVEN:{} EXPECTED:{}".format(input_stack["ecosystem"],
                                                  HPF_SCORING_REGION)})
             else:
-                companion_recommendation, package_to_topic_dict, missing_packages =\
-                    app.scoring_object.predict(
+                companion_recommendation, package_to_topic_dict,\
+                    missing_packages = app.scoring_object.predict(
                         input_stack['package_list'])
                 response_json.append({
                     "missing_packages": missing_packages,
                     "companion_packages": companion_recommendation,
                     "ecosystem": input_stack["ecosystem"],
-                    "package_to_topic_dict": package_to_topic_dict
+                    "package_to_topic_dict": package_to_topic_dict,
                 })
     else:
-        response_json.append({"Error": "No scoring region provided"})
-    return flask.jsonify(response_json)
+        response_json.append(
+            {"Error": "No scoring region provided"})
+    return flask.jsonify(response_json_final)
 
 
 if __name__ == "__main__":
