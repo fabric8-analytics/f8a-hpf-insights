@@ -35,7 +35,6 @@ HPF Matrix Factorizations for companion recommendation.
 ## To run load testing for recommendation API:
 
 * `pip install locustio==0.8.1`
-* If running the script against a local setup, comment out the first line below `# Use this for devcluster.`
 * Bring up the service.
 * `locust -f perf_tests/locust_tests.py --host=<URL of the service>`
 
