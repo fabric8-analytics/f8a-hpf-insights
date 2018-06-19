@@ -2,7 +2,8 @@
 
 import os
 import flask
-from flask import Flask, request
+import logging
+from flask import Flask, request, current_app
 from flask_cors import CORS
 from src.data_store.s3_data_store import S3DataStore
 from src.scoring.hpf_scoring import HPFScoring
@@ -13,7 +14,23 @@ from src.config import (AWS_S3_ACCESS_KEY_ID,
                         SCORING_THRESHOLD)
 
 
+def setup_logging(flask_app):
+    """Perform the setup of logging (file, log level) for this application."""
+    if not flask_app.debug:
+        handler = logging.StreamHandler()
+        handler.setFormatter(logging.Formatter(
+            '[%(asctime)s] %(levelname)s in %(module)s: %(message)s'))
+        log_level = os.environ.get(
+            'FLASK_LOGGING_LEVEL', logging.getLevelName(logging.INFO))
+        handler.setLevel(log_level)
+
+        flask_app.logger.addHandler(handler)
+        flask_app.config['LOGGER_HANDLER_POLICY'] = 'never'
+        flask_app.logger.setLevel(logging.DEBUG)
+
+
 app = Flask(__name__)
+setup_logging(app)
 CORS(app)
 
 global scoring_status
@@ -85,6 +102,8 @@ def hpf_scoring():
                 companion_recommendation, package_to_topic_dict,\
                     missing_packages = app.scoring_object.predict(
                         input_stack['package_list'])
+                current_app.logger.debug(
+                    'The companion recommendation are {}'.format(companion_recommendation))
                 response_json.append({
                     "missing_packages": missing_packages,
                     "companion_packages": companion_recommendation,
@@ -92,6 +111,8 @@ def hpf_scoring():
                     "package_to_topic_dict": package_to_topic_dict,
                 })
     else:
+        current_app.logger.error(
+            'No scoring region provided. HPF_SCORING_REGION is {}'.format(HPF_SCORING_REGION))
         response_json.append(
             {"Error": "No scoring region provided"})
     return flask.jsonify(response_json_final)

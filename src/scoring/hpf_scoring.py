@@ -6,6 +6,8 @@ import os
 from edward.models import Poisson
 from edward.models import Gamma
 import tensorflow as tf
+import os
+from flask import current_app
 from collections import defaultdict
 from src.config import (SCORING_THRESHOLD,
                         HPF_SCORING_REGION,
@@ -15,6 +17,9 @@ from src.config import (SCORING_THRESHOLD,
                         HPF_output_item_matrix,
                         a, a_c, c, c_c,
                         b_c, d_c, K)
+
+# To turn off tensorflow CPU warning
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 
 class HPFScoring:
@@ -109,6 +114,8 @@ class HPFScoring:
         for manifest_id, dependency_set in self.manifest_id_dict.items():
             if dependency_set == input_id_set:
                 break
+        current_app.logger.debug(
+            "input_id_set {} and manifest_id {}".format(input_id_set, manifest_id))
         return manifest_id
 
     def folding_in(self, input_id_set):
@@ -137,7 +144,8 @@ class HPFScoring:
             try:
                 value = (maxn - self.dummy_result[i]) / min_max
             except Exception as e:
-                print(e)
+                current_app.logger.error(
+                    "Exception occured in normalization {}".format(e))
             finally:
                 self.dummy_result[i] = value
 
