@@ -10,8 +10,7 @@ from src.scoring.hpf_scoring import HPFScoring
 from src.config import (AWS_S3_ACCESS_KEY_ID,
                         AWS_S3_SECRET_ACCESS_KEY,
                         AWS_S3_BUCKET_NAME,
-                        HPF_SCORING_REGION,
-                        SCORING_THRESHOLD)
+                        HPF_SCORING_REGION)
 
 
 def setup_logging(flask_app):
@@ -43,7 +42,6 @@ if HPF_SCORING_REGION != "":
                             access_key=AWS_S3_ACCESS_KEY_ID,
                             secret_key=AWS_S3_SECRET_ACCESS_KEY)
     app.scoring_object = HPFScoring(datastore=s3_object,
-                                    scoring_threshold=SCORING_THRESHOLD,
                                     scoring_region=HPF_SCORING_REGION)
     app.scoring_status = True
 else:
@@ -59,18 +57,6 @@ def list_routes():
 def heart_beat():
     """Handle the / REST API call."""
     return flask.jsonify({"status": "ok", "routes": list_routes()})
-
-
-@app.route('/api')
-def api_routes():
-    """Handle the /api REST API call."""
-    return flask.jsonify({"routes": list_routes()})
-
-
-@app.route('/api/v1')
-def api_v1_routes():
-    """Handle the /api/v1 REST API call."""
-    return flask.jsonify({"routes": list_routes()})
 
 
 @app.route('/api/v1/liveness', methods=['GET'])
@@ -116,6 +102,15 @@ def hpf_scoring():
         response_json.append(
             {"Error": "No scoring region provided"})
     return flask.jsonify(response_json_final)
+
+
+@app.route('/api/v1/model_details', methods=['GET'])
+def hpf_model_details():
+    """Endpoint to return model size details."""
+    if app.scoring_status:
+        return flask.jsonify({"Model Details": app.scoring_object.model_details()})
+    else:
+        return flask.jsonify({"Error": "No scoring region provided"})
 
 
 if __name__ == "__main__":
