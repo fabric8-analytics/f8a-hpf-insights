@@ -3,13 +3,15 @@
 import numpy as np
 from scipy import sparse
 import os
+from sys import getsizeof
 from edward.models import Poisson
 from edward.models import Gamma
 import tensorflow as tf
 import os
 from flask import current_app
 from collections import defaultdict
-from src.config import (SCORING_THRESHOLD,
+from src.config import (UNKNOWN_PACKAGES_THRESHOLD,
+                        MAX_COMPANION_REC_COUNT,
                         HPF_SCORING_REGION,
                         HPF_output_package_id_dict,
                         HPF_output_manifest_id_dict,
@@ -25,11 +27,10 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 class HPFScoring:
     """The HPF Model scoring class."""
 
-    def __init__(self, datastore=None, scoring_threshold=SCORING_THRESHOLD,
+    def __init__(self, datastore=None,
                  scoring_region=HPF_SCORING_REGION):
         """Set the variables and load model data."""
         self.datastore = datastore
-        self.scoring_threshold = scoring_threshold
         self.scoring_region = scoring_region
         self.package_id_dict = None
         self.id_package_dict = None
@@ -47,6 +48,27 @@ class HPFScoring:
         self.dummy_result = Poisson(
             np.dot(self.theta, np.transpose(self.beta))).eval(session=self.sess)
         self.normalize_result()
+
+    def _getsizeof(self, attribute):
+        """Return the size of attribute in MBs.
+
+        param attribute: The object's attribute.
+        """
+        return "{} MB".format(getsizeof(attribute) / 1024 / 1024)
+
+    def model_details(self):
+        """Return the model details size."""
+        return(
+            "The model will be scored against\
+                {} Packages,\
+                {} Manifests,\
+                Rating matrix of size {}, and\
+                Beta matrix of size {}.".format(
+                len(self.package_id_dict),
+                len(self.manifest_id_dict),
+                self._getsizeof(self.rating_matrix),
+                self._getsizeof(self.beta))
+        )
 
     def loadS3(self):
         """Load the model data from AWS S3."""
@@ -88,21 +110,26 @@ class HPFScoring:
         in the input_stack+recommendation.
         :return missing_packages: The list of packages unknown to the HPF model.
         """
+        input_stack = set(input_stack)
         input_id_set = set()
-        missing_packages = []
+        missing_packages = set()
         package_topic_dict = {}
+        companion_recommendation = []
         for package_name in input_stack:
             package_id = self.package_id_dict.get(package_name)
             if package_id:
                 input_id_set.add(package_id)
                 package_topic_dict[package_name] = []
             else:
-                missing_packages.append(package_name)
-
-        # TODO: Check for known-unknown ratio before recommending
-        companion_recommendation = self.folding_in(
-            input_id_set)
-        return companion_recommendation, package_topic_dict, missing_packages
+                missing_packages.add(package_name)
+        if len(missing_packages) / len(input_stack) < UNKNOWN_PACKAGES_THRESHOLD:
+            companion_recommendation = self.folding_in(
+                input_id_set)
+        else:
+            current_app.logger.error(
+                "{} length of missing packages beyond unknow threshold value of {}".format(
+                    len(missing_packages), UNKNOWN_PACKAGES_THRESHOLD))
+        return companion_recommendation, package_topic_dict, list(missing_packages)
 
     def match_manifest(self, input_id_set):
         """Find a manifest list that matches user's input package list and return its index.
@@ -158,8 +185,7 @@ class HPFScoring:
         :return package_topic_dict: The topics associated with the packages
         in the input_stack+recommendation.
         """
-        # TODO: Add a param for variable len of highest_indices
-        highest_indices = result.argsort()[-5:len(result)]
+        highest_indices = result.argsort()[-MAX_COMPANION_REC_COUNT:len(result)]
         companion_recommendation = []
         for package_id in highest_indices:
             recommendation = {
