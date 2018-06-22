@@ -104,6 +104,9 @@ ENV/
 # Intellij Idea
 .idea/
 
+# test cache
+.pytest_cache/
+
 config.py
 *env*/
 secret.yaml
