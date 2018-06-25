@@ -9,3 +9,4 @@ daiquiri
 gevent
 gunicorn
 scipy
+awscli
