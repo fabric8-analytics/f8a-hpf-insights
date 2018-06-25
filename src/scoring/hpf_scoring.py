@@ -49,7 +49,8 @@ class HPFScoring:
             np.dot(self.theta, np.transpose(self.beta))).eval(session=self.sess)
         self.normalize_result()
 
-    def _getsizeof(self, attribute):
+    @staticmethod
+    def _getsizeof(attribute):
         """Return the size of attribute in MBs.
 
         param attribute: The object's attribute.
@@ -66,8 +67,8 @@ class HPFScoring:
                 Beta matrix of size {}.".format(
                 len(self.package_id_dict),
                 len(self.manifest_id_dict),
-                self._getsizeof(self.rating_matrix),
-                self._getsizeof(self.beta))
+                HPFScoring._getsizeof(self.rating_matrix),
+                HPFScoring._getsizeof(self.beta))
         )
 
     def loadS3(self):
