@@ -3,7 +3,7 @@
 TEST_IMAGE_NAME='hpf-insights-tests'
 
 gc() {
-    docker rmi -f `make get-image-name`
+    docker rmi -f $(make get-image-name)
     docker rmi -f ${TEST_IMAGE_NAME}
 }
 
