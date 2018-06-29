@@ -1,0 +1,106 @@
+swagger: "2.0"
+info:
+  title: API for Fabric8 Analytics HPF Insights
+  description: Spec for the REST API of HPF insights model.
+  version: "0.1"
+basePath: "/api/v1/"
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  /liveness:
+    get:
+      tags: [Service settings]
+      operationId: src.flask_endpoint.liveness
+      summary: Get job service liveness
+      responses:
+        200:
+          description: Service is alive
+  /readiness:
+    get:
+      tags: [Service settings]
+      operationId: src.flask_endpoint.readiness
+      summary: Get job service readiness
+      responses:
+        200:
+          description: Service is ready
+  /companion_recommendation:
+    post:
+      tags: [Recommendation API]
+      operationId: src.flask_endpoint.hpf_scoring
+      description: Return companion package recommendations for a user stack
+      summary: Takes an array list of ecosystem + package_list as input, and provides recommendation for each package list. For ecosystems that don't match the loaded model's ecosystem, an error message is returned.
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/UserStack'
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/SuccessResponse'
+          description: Companion recommendations along with their associated probabilities
+        '202':
+          schema:
+            $ref: '#/definitions/FailureResponse'
+          description: No ecosystem provided to load the flask app
+definitions:
+  UserStack:
+    title: Request format for companion_recommendation endpoint
+    description: Request format for companion_recommendation endpoint
+    type: array
+    items:
+        type: object
+        properties:
+          ecosystem:
+            type: string
+          package_list:
+            type: array
+            items:
+              type: string
+  SuccessResponse:
+    title: Response containing the recommendations
+    description: Response containing the recommendations
+    type: array
+    items:
+      type: object
+      properties:
+        ecosystem:
+          type: string
+        missing_packages:
+          type: array
+          items:
+            type: string
+        companion_packages:
+          $ref: '#/definitions/comp_recommendation'
+        package_to_topic_dict:
+          type: object
+          properties:
+            package_name:
+              type: array
+              items:
+                type: string
+  comp_recommendation:
+    type: array
+    items:
+      type: object
+      properties:
+        package_name:
+          type: string
+        cooccurrence_probability:
+          type: number
+        topic_list:
+          type: array
+          items:
+            type: string
+  FailureResponse:
+    title: Response containing the recommendations
+    description: Response containing the recommendations
+    type: array
+    items:
+      type: object
+      properties:
+        Error:
+          type: string

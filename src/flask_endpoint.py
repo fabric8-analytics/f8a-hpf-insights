@@ -1,6 +1,7 @@
 """The Endpoint to serve model training and scoring."""
 
 import os
+import connexion
 import flask
 import logging
 from flask import Flask, request, current_app
@@ -13,7 +14,8 @@ from src.config import (AWS_S3_ACCESS_KEY_ID,
                         AWS_S3_SECRET_ACCESS_KEY,
                         AWS_S3_BUCKET_NAME,
                         HPF_SCORING_REGION,
-                        USE_CLOUD_SERVICES)
+                        USE_CLOUD_SERVICES,
+                        SWAGGER_YAML_PATH)
 
 
 def setup_logging(flask_app):  # pragma: no cover
@@ -31,9 +33,9 @@ def setup_logging(flask_app):  # pragma: no cover
         flask_app.logger.setLevel(logging.DEBUG)
 
 
-app = Flask(__name__)
-setup_logging(app)
-CORS(app)
+app = connexion.FlaskApp(__name__)
+setup_logging(app.app)
+CORS(app.app)
 
 global scoring_status
 global scoring_object
@@ -55,7 +57,7 @@ else:
 
 def list_routes():
     """Return a list of routes for this app."""
-    return [str(rule) for rule in app.url_map.iter_rules()]
+    return [str(rule) for rule in app.app.url_map.iter_rules()]
 
 
 @app.route('/')
@@ -117,5 +119,6 @@ def hpf_model_details():
         return flask.jsonify({"Error": "No scoring region provided"})
 
 
+app.add_api(SWAGGER_YAML_PATH)
 if __name__ == "__main__":
     app.run()

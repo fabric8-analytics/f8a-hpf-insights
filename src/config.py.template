@@ -38,3 +38,6 @@ d_c = 0.99
 # Feedback constants
 feedback_threshold = 0.5
 USE_FEEDBACK = os.environ.get("USE_FEEDBACK", "False")
+
+#Swagger path
+SWAGGER_YAML_PATH = 'swagger/swagger.yaml'
