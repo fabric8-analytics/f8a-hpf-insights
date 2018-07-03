@@ -1,4 +1,4 @@
-FROM push.registry.devshift.net/fabric8-analytics/f8a-hpf-insights:latest
+FROM quay.io/openshiftio/fabric8-analytics-f8a-hpf-insights:latest
 
 LABEL MAINTAINER="Sarah Masud <smasud@redhat.com>"
 
