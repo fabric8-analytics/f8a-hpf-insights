@@ -1,12 +1,13 @@
 ifeq ($(TARGET),rhel)
   DOCKERFILE := Dockerfile.rhel
-  REGISTRY := push.registry.devshift.net/osio-prod
+  REPOSITORY := openshiftio/rhel-fabric8-analytics-f8a-hpf-insights
 else
   DOCKERFILE := Dockerfile
-  REGISTRY := push.registry.devshift.net
+  REPOSITORY := openshiftio/fabric8-analytics-f8a-hpf-insights
 endif
-REPOSITORY?=fabric8-analytics/f8a-hpf-insights
-DEFAULT_TAG=latest
+
+REGISTRY := quay.io
+DEFAULT_TAG := latest
 
 .PHONY: all docker-build fast-docker-build get-image-name get-image-repository
 
