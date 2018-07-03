@@ -137,7 +137,7 @@ parameters:
   displayName: Docker image
   required: true
   name: DOCKER_IMAGE
-  value: "openshiftio/fabric8-analytics-f8a-hpf-insights"
+  value: "openshiftio/rhel-fabric8-analytics-f8a-hpf-insights"
 
 - description: Image tag
   displayName: Image tag
