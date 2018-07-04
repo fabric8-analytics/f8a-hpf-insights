@@ -3,6 +3,8 @@
 
 HPF Matrix Factorizations for companion recommendation.
 
+*HPF- Hierarchical Poisson Factorization*
+
 ## Supported ecosystems:
 * Maven
 
