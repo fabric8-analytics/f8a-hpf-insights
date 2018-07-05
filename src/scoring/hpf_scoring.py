@@ -74,6 +74,8 @@ class HPFScoring:
 
     def loadS3(self):
         """Load the model data from AWS S3."""
+        rating_matrix_filename = os.path.join(
+            self.scoring_region, HPF_output_rating_matrix)
         self.datastore.download_file(
             rating_matrix_filename, "/tmp/rating_matrix.zip")
         with zipfile.ZipFile("/tmp/rating_matrix.zip", "r") as zip_ref:
@@ -102,9 +104,6 @@ class HPFScoring:
             manifest_id_dict_filename)
         self.manifest_id_dict = {n: set(x)
                                  for n, x in self.manifest_id_dict.items()}
-        rating_matrix_filename = os.path.join(
-            self.scoring_region, HPF_output_rating_matrix)
-
         self.manifests, self.packages = self.rating_matrix.shape
 
     def predict(self, input_stack):
