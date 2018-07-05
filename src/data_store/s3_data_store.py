@@ -3,6 +3,7 @@
 import json
 import os
 import boto3
+boto3.set_stream_logger(name='botocore')
 import botocore
 
 from src.config import (AWS_S3_ENDPOINT_URL)
@@ -75,7 +76,8 @@ class S3DataStore(AbstractDataStore):
 
     def download_file(self, src, target):
         """Download file from data store."""
-        self.bucket.download_file(src, target)
+        self.bucket.download_file(
+            src, target)
         return None
 
     def iterate_bucket_items(self, ecosystem='npm'):

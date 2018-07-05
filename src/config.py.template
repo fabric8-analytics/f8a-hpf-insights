@@ -20,7 +20,7 @@ UNKNOWN_PACKAGES_THRESHOLD = float(os.environ.get("UNKNOWN_PACKAGES_THRESHOLD", 
 # Model filepaths
 HPF_output_package_id_dict = "scoring/package_id_dict.json"
 HPF_output_manifest_id_dict = "scoring/manifest_id_dict.json"
-HPF_output_rating_matrix = "scoring/rating_matrix.npz"
+HPF_output_rating_matrix = "scoring/rating_matrix.zip"
 HPF_output_item_matrix = "scoring/item_matrix.npz"
 
 # Model HyperParameters
