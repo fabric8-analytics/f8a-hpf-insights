@@ -5,15 +5,13 @@ import os
 import boto3
 boto3.set_stream_logger(name='botocore')
 import botocore
-import daiquiri
 import logging
 
 from src.config import (AWS_S3_ENDPOINT_URL)
 from src.data_store.abstract_data_store import AbstractDataStore
 
-daiquiri.setup(level=logging.INFO)
-_logger = daiquiri.getLogger(__name__)
-
+logging.basicConfig()
+_logger = logging.getLogger()
 
 class S3DataStore(AbstractDataStore):
     """Class that represents S3 data storage."""
