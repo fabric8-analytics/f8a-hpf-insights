@@ -3,11 +3,15 @@
 import json
 import os
 import boto3
+boto3.set_stream_logger(name='botocore')
 import botocore
+import logging
 
 from src.config import (AWS_S3_ENDPOINT_URL)
 from src.data_store.abstract_data_store import AbstractDataStore
 
+logging.basicConfig()
+_logger = logging.getLogger()
 
 class S3DataStore(AbstractDataStore):
     """Class that represents S3 data storage."""
@@ -18,9 +22,12 @@ class S3DataStore(AbstractDataStore):
                                              aws_secret_access_key=secret_key)
         self.bucket_name = src_bucket_name
         if AWS_S3_ENDPOINT_URL == '':
+            _logger.info("Using correct data store")
             self.s3_resource = self.session.resource('s3', config=botocore.client.Config(
                 signature_version='s3v4'))
         else:
+            _logger.warning("Using this condition, because why not.")
+            _logger.warning(AWS_S3_ENDPOINT_URL)
             self.s3_resource = self.session.resource('s3', config=botocore.client.Config(
                 signature_version='s3v4'),
                 region_name="us-east-1", endpoint_url=AWS_S3_ENDPOINT_URL)
@@ -75,7 +82,8 @@ class S3DataStore(AbstractDataStore):
 
     def download_file(self, src, target):
         """Download file from data store."""
-        self.bucket.download_file(src, target)
+        self.bucket.download_file(
+            src, target)
         return None
 
     def iterate_bucket_items(self, ecosystem='npm'):

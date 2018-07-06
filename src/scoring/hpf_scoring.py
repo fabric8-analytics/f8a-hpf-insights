@@ -2,6 +2,7 @@
 
 import numpy as np
 from scipy import sparse
+import zipfile
 import os
 from sys import getsizeof
 from edward.models import Poisson
@@ -73,6 +74,25 @@ class HPFScoring:
 
     def loadS3(self):
         """Load the model data from AWS S3."""
+        rating_matrix_filename = os.path.join(
+            self.scoring_region, HPF_output_rating_matrix)
+        self.datastore.download_file(
+            rating_matrix_filename, "/tmp/rating_matrix.zip")
+        with zipfile.ZipFile("/tmp/rating_matrix.zip", "r") as zip_ref:
+            zip_ref.extractall("/tmp")
+        sparse_matrix = sparse.load_npz('/tmp/rating_matrix.npz')
+        self.rating_matrix = sparse_matrix.toarray()
+        del(sparse_matrix)
+        os.remove("/tmp/rating_matrix.zip")
+        os.remove("/tmp/rating_matrix.npz")
+        beta_matrix_filename = os.path.join(
+            self.scoring_region, HPF_output_item_matrix)
+        self.datastore.download_file(
+            beta_matrix_filename, "/tmp/item_matrix.npz")
+        sparse_matrix = sparse.load_npz('/tmp/item_matrix.npz')
+        self.beta = sparse_matrix.toarray()
+        del(sparse_matrix)
+        os.remove("/tmp/item_matrix.npz")
         package_id_dict_filename = os.path.join(
             self.scoring_region, HPF_output_package_id_dict)
         self.package_id_dict = self.datastore.read_json_file(
@@ -84,20 +104,6 @@ class HPFScoring:
             manifest_id_dict_filename)
         self.manifest_id_dict = {n: set(x)
                                  for n, x in self.manifest_id_dict.items()}
-        rating_matrix_filename = os.path.join(
-            self.scoring_region, HPF_output_rating_matrix)
-        self.datastore.download_file(
-            rating_matrix_filename, "/tmp/rating_matrix.npz")
-        sparse_matrix = sparse.load_npz('/tmp/rating_matrix.npz')
-        self.rating_matrix = sparse_matrix.toarray()
-        del(sparse_matrix)
-        beta_matrix_filename = os.path.join(
-            self.scoring_region, HPF_output_item_matrix)
-        self.datastore.download_file(
-            beta_matrix_filename, "/tmp/item_matrix.npz")
-        sparse_matrix = sparse.load_npz('/tmp/item_matrix.npz')
-        self.beta = sparse_matrix.toarray()
-        del(sparse_matrix)
         self.manifests, self.packages = self.rating_matrix.shape
 
     def predict(self, input_stack):
