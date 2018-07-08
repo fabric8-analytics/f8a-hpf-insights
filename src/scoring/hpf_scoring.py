@@ -2,7 +2,6 @@
 
 import numpy as np
 from scipy import sparse
-import zipfile
 import os
 from sys import getsizeof
 from edward.models import Poisson
