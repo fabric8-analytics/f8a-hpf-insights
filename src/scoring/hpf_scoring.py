@@ -16,7 +16,7 @@ from src.config import (UNKNOWN_PACKAGES_THRESHOLD,
                         HPF_SCORING_REGION,
                         HPF_output_package_id_dict,
                         HPF_output_manifest_id_dict,
-                        HPF_output_rating_matrix,
+                        HPF_output_user_matrix,
                         HPF_output_item_matrix,
                         a, a_c, c, c_c,
                         b_c, d_c, K)
@@ -35,20 +35,18 @@ class HPFScoring:
         self.scoring_region = scoring_region
         self.package_id_dict = None
         self.id_package_dict = None
-        self.rating_matrix = None
         self.beta = None
+        self.theta = None
         self.manifest_id_dict = None
         self.manifests = 0
         self.packages = 0
-        self.sess = tf.Session()
         self.epsilon = Gamma(tf.constant(
-            a_c), tf.constant(a_c) / tf.constant(b_c)).eval(session=self.sess)
-        self.theta = np.array([self.epsilon * Gamma(tf.constant(
-            a), self.epsilon).eval(session=self.sess)] * K)
+            a_c), tf.constant(a_c) / tf.constant(b_c)).eval(session=tf.Session())
+        self.theta_dummy = Poisson(np.array([self.epsilon * Gamma(tf.constant(
+            a), self.epsilon).eval(session=tf.Session())] * K, dtype=float))
         self.loadS3()
-        self.dummy_result = Poisson(
-            np.dot(self.theta, np.transpose(self.beta))).eval(session=self.sess)
-        self.normalize_result()
+        self.dummy_result = self.theta_dummy.prob(
+            self.beta).eval(session=tf.Session())
 
     @staticmethod
     def _getsizeof(attribute):
@@ -64,27 +62,24 @@ class HPFScoring:
             "The model will be scored against\
                 {} Packages,\
                 {} Manifests,\
-                Rating matrix of size {}, and\
+                Theta matrix of size {}, and\
                 Beta matrix of size {}.".format(
                 len(self.package_id_dict),
                 len(self.manifest_id_dict),
-                HPFScoring._getsizeof(self.rating_matrix),
+                HPFScoring._getsizeof(self.theta),
                 HPFScoring._getsizeof(self.beta))
         )
 
     def loadS3(self):
         """Load the model data from AWS S3."""
-        rating_matrix_filename = os.path.join(
-            self.scoring_region, HPF_output_rating_matrix)
+        theta_matrix_filename = os.path.join(
+            self.scoring_region, HPF_output_user_matrix)
         self.datastore.download_file(
-            rating_matrix_filename, "/tmp/rating_matrix.zip")
-        with zipfile.ZipFile("/tmp/rating_matrix.zip", "r") as zip_ref:
-            zip_ref.extractall("/tmp")
-        sparse_matrix = sparse.load_npz('/tmp/rating_matrix.npz')
-        self.rating_matrix = sparse_matrix.toarray()
+            theta_matrix_filename, "/tmp/user_matrix.npz")
+        sparse_matrix = sparse.load_npz('/tmp/user_matrix.npz')
+        self.theta = sparse_matrix.toarray()
         del(sparse_matrix)
-        os.remove("/tmp/rating_matrix.zip")
-        os.remove("/tmp/rating_matrix.npz")
+        os.remove("/tmp/user_matrix.npz")
         beta_matrix_filename = os.path.join(
             self.scoring_region, HPF_output_item_matrix)
         self.datastore.download_file(
@@ -104,7 +99,8 @@ class HPFScoring:
             manifest_id_dict_filename)
         self.manifest_id_dict = {n: set(x)
                                  for n, x in self.manifest_id_dict.items()}
-        self.manifests, self.packages = self.rating_matrix.shape
+        self.manifests = self.theta.shape[0]
+        self.packages = self.beta.shape[0]
 
     def predict(self, input_stack):
         """Prediction function.
@@ -144,10 +140,11 @@ class HPFScoring:
         :param input_id_set: A set containing package ids of user's input package list.
         :return manifest_id: The index of the matched manifest.
         """
-        manifest_id = -1
         for manifest_id, dependency_set in self.manifest_id_dict.items():
             if dependency_set == input_id_set:
                 break
+        else:
+            manifest_id = -1
         current_app.logger.debug(
             "input_id_set {} and manifest_id {}".format(input_id_set, manifest_id))
         return manifest_id
@@ -162,32 +159,31 @@ class HPFScoring:
         if manifest_id == -1:
             result = np.array(self.dummy_result)
         else:
-            result = self.rating_matrix[manifest_id]
-        return self.filter_recommendation(result)
+            graph_new = tf.Graph()
+            with graph_new.as_default():
+                result = Poisson(self.theta[manifest_id])
+                result = result.prob(self.beta)
+            with tf.Session(graph=graph_new) as sess_new:
+                result = sess_new.run(result)
+        normalised_result = self.normalize_result(result)
+        return self.filter_recommendation(normalised_result)
 
-    def normalize_result(self):
+    def normalize_result(self, result):
         """Normalise the probability score of the resulting recommendation.
 
         :param result: The Unnormalised recommendation result array.
         :return result: The normalised recommendation result array.
         """
-        maxn = self.dummy_result.max()
-        min_max = maxn - self.dummy_result.min()
+        normalised_result = np.zeros([self.packages])
         for i in range(self.packages):
-            value = 0
-            try:
-                value = (maxn - self.dummy_result[i]) / min_max
-            except Exception as e:
-                current_app.logger.error(
-                    "Exception occured in normalization {}".format(e))
-            finally:
-                self.dummy_result[i] = value
+            normalised_result[i] = result[i].mean()
+        return normalised_result
 
     def filter_recommendation(self, result):
         """Filter companion recommendations based on sorted threshold score.
 
         :param result: The unfiltered companion recommendation result.
-        :return companion_recommendation: The filtered list of recommended companion packges
+        :return companion_recommendation: The filtered list of recommended companion packages
         along with condifence score.
         :return package_topic_dict: The topics associated with the packages
         in the input_stack+recommendation.
