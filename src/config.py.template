@@ -12,9 +12,13 @@ AWS_S3_BUCKET_NAME = os.environ.get("AWS_S3_BUCKET_NAME", "hpf-insights")
 SERVICE_PORT = "6006"
 SERVICE_TIMEOUT = "900"
 USE_CLOUD_SERVICES = os.environ.get("USE_CLOUD_SERVICES", "False")
+HPF_SCORING_REGION = os.environ.get("HPF_SCORING_REGION", "maven")
+
+# Training constants
+HPF_input_raw_data = "training/manifest.json"
 
 # Scoring constants
-HPF_SCORING_REGION = os.environ.get("HPF_SCORING_REGION", "maven")
+
 MAX_COMPANION_REC_COUNT = int(os.environ.get("MAX_COMPANION_REC_COUNT", "5"))
 UNKNOWN_PACKAGES_THRESHOLD = float(os.environ.get("UNKNOWN_PACKAGES_THRESHOLD", "0.3"))
 
