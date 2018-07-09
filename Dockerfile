@@ -13,6 +13,7 @@ COPY ./src /src
 COPY ./tests/test_data /tests/test_data
 COPY ./swagger /src/swagger
 COPY ./src/config.py.template /src/config.py
+COPY ./deployments /deployments
 
 ADD ./entrypoint.sh /bin/entrypoint.sh
 RUN chmod +x /bin/entrypoint.sh

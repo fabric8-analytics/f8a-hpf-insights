@@ -15,7 +15,11 @@ from src.config import (AWS_S3_ACCESS_KEY_ID,
                         AWS_S3_BUCKET_NAME,
                         HPF_SCORING_REGION,
                         USE_CLOUD_SERVICES,
-                        SWAGGER_YAML_PATH)
+                        SWAGGER_YAML_PATH,
+                        BOOTSTRAP_ACTIONS_TEMPLATE,
+                        SOURCE_CODE_ZIPPED_PATH)
+from deployments.deploy_emr import submit_job
+
 
 # Turn off the annoying boto logs unless some error occurs
 logging.getLogger('botocore').setLevel(logging.ERROR)
@@ -118,6 +122,14 @@ def hpf_model_details():
 
 
 app.add_api(SWAGGER_YAML_PATH)
+
+@app.route('/api/v1/train_model', methods=['POST'])
+def submit_training_job():
+    """Submit a training job to run on the EMR cluster."""
+    response = submit_job(input_bootstrap_file=BOOTSTRAP_ACTIONS_TEMPLATE,
+                          input_src_code_file=SOURCE_CODE_ZIPPED_PATH)
+
+    return flask.jsonify(response)
 
 if __name__ == "__main__":
     app.run(debug=True, port=6006)
