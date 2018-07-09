@@ -5,8 +5,5 @@ tensorflow==1.4.1
 numpy
 boto3
 botocore
-daiquiri
-gevent
 gunicorn
 scipy
-awscli
