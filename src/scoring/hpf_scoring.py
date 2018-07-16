@@ -85,13 +85,17 @@ class HPFScoring:
 
     def loadObjects(self):  # pragma: no cover
         """Load the model data from AWS S3."""
-        theta_matrix_filename = os.path.join(HPF_SCORING_REGION, HPF_output_user_matrix)
-        self.datastore.download_file(theta_matrix_filename, "/tmp/hpf/user_matrix.npz")
+        theta_matrix_filename = os.path.join(
+            HPF_SCORING_REGION, HPF_output_user_matrix)
+        self.datastore.download_file(
+            theta_matrix_filename, "/tmp/hpf/user_matrix.npz")
         user_matrix_sparse = sparse.load_npz('/tmp/hpf/user_matrix.npz')
         self.theta = user_matrix_sparse.toarray()
 
-        beta_matrix_filename = os.path.join(HPF_SCORING_REGION, HPF_output_item_matrix)
-        self.datastore.download_file(beta_matrix_filename, "/tmp/hpf/item_matrix.npz")
+        beta_matrix_filename = os.path.join(
+            HPF_SCORING_REGION, HPF_output_item_matrix)
+        self.datastore.download_file(
+            beta_matrix_filename, "/tmp/hpf/item_matrix.npz")
         item_matrix_sparse = sparse.load_npz('/tmp/hpf/item_matrix.npz')
         self.beta = item_matrix_sparse.toarray()
 
@@ -102,27 +106,35 @@ class HPFScoring:
         self.lam_shp = sparse.load_npz('/tmp/hpf/lam_shp.npz').toarray()
         self.lam_rte = sparse.load_npz('/tmp/hpf/lam_rte.npz').toarray()
 
-        package_id_dict_filename = os.path.join(HPF_SCORING_REGION, HPF_output_package_id_dict)
-        self.package_id_dict = self.datastore.read_json_file(package_id_dict_filename)
+        package_id_dict_filename = os.path.join(
+            HPF_SCORING_REGION, HPF_output_package_id_dict)
+        self.package_id_dict = self.datastore.read_json_file(
+            package_id_dict_filename)
         self.id_package_dict = OrderedDict({x: n for n, x in self.package_id_dict[
             0].get("package_list", {}).items()})
-        self.package_id_dict = OrderedDict(self.package_id_dict[0].get("package_list", {}))
+        self.package_id_dict = OrderedDict(
+            self.package_id_dict[0].get("package_list", {}))
 
-        manifest_id_dict_filename = os.path.join(HPF_SCORING_REGION, HPF_output_manifest_id_dict)
-        self.manifest_id_dict = self.datastore.read_json_file(manifest_id_dict_filename)
+        manifest_id_dict_filename = os.path.join(
+            HPF_SCORING_REGION, HPF_output_manifest_id_dict)
+        self.manifest_id_dict = self.datastore.read_json_file(
+            manifest_id_dict_filename)
         self.manifest_id_dict = OrderedDict({n: set(x) for n, x in self.manifest_id_dict[
             0].get("manifest_list", {}).items()})
         self.manifests = self.theta.shape[0]
         self.packages = self.beta.shape[0]
 
         if self.USE_FEEDBACK:
-            alpha_matrix_filename = os.path.join(HPF_SCORING_REGION, HPF_output_feedback_matrix)
-            self.datastore.download_file(alpha_matrix_filename, "/tmp/hpf/feedback_matrix.npz")
+            alpha_matrix_filename = os.path.join(
+                HPF_SCORING_REGION, HPF_output_feedback_matrix)
+            self.datastore.download_file(
+                alpha_matrix_filename, "/tmp/hpf/feedback_matrix.npz")
             sparse_matrix = sparse.load_npz("/tmp/hpf/feedback_matrix.npz")
             self.alpha = sparse_matrix.toarray()
             feedback_id_dict_filename = os.path.join(
                 HPF_SCORING_REGION, HPF_output_feedback_id_dict)
-            self.feedback_id_dict = self.datastore.read_json_file(feedback_id_dict_filename)
+            self.feedback_id_dict = self.datastore.read_json_file(
+                feedback_id_dict_filename)
             self.feedback_id_dict = OrderedDict({n: set(x) for n, x in self.feedback_id_dict[
                 0].get("feedback_list", {}).items()})
 
@@ -159,9 +171,11 @@ class HPFScoring:
             return [], {}, list(missing_packages)
         manifest_match = self.match_manifest(input_id_set)
         if manifest_match > 0:
-            companion_recommendation = self.recommend_known_user(manifest_match, input_id_set)
+            companion_recommendation = self.recommend_known_user(
+                manifest_match, input_id_set)
         else:
-            companion_recommendation = self.recommend_new_user(list(input_id_set))
+            companion_recommendation = self.recommend_new_user(
+                list(input_id_set))
         return companion_recommendation, package_topic_dict, list(missing_packages)
 
     def match_feedback_manifest(self, input_id_set):
@@ -176,7 +190,7 @@ class HPFScoring:
         else:
             manifest_id = -1
         _logger.debug(
-                "input_id_set {} and feedback_manifest_id {}".format(input_id_set, manifest_id))
+            "input_id_set {} and feedback_manifest_id {}".format(input_id_set, manifest_id))
         return manifest_id
 
     def match_manifest(self, input_id_set):  # pragma: no cover
@@ -185,11 +199,12 @@ class HPFScoring:
         :param input_id_set: A set containing package ids of user's input package list.
         :return manifest_id: The index of the matched manifest.
         """
-        # TODO: Go back to the difference based logic, this simpler logic will do for now.
+        # TODO: Go back to the difference based logic, this simpler logic will
+        # do for now.
         for manifest_id, dependency_set in self.manifest_id_dict.items():
             if input_id_set.issubset(dependency_set):
                 current_app.logger.debug(
-                        "input_id_set {} and manifest_id {}".format(input_id_set, manifest_id))
+                    "input_id_set {} and manifest_id {}".format(input_id_set, manifest_id))
                 return int(manifest_id)
         return -1
 
@@ -206,17 +221,19 @@ class HPFScoring:
         prediction.
         """
         # initializing parameters
-        _logger.info("Could not find a match, calculating factors to recommend.")
+        _logger.info(
+            "Could not find a match, calculating factors to recommend.")
         k_shp = a_c + k * a
         # TODO: t_shp, Why is it not required here?
         nY = len(input_user_stack)
         Y = np.ones(shape=(nY,))
         seed = np.random.seed(int(time.time()))
-        theta = Gamma(a, 1 / b_c).sample(sample_shape=(k,), seed=seed).eval(session=tf.Session())
+        theta = Gamma(a, 1 / b_c).sample(sample_shape=(k,),
+                                         seed=seed).eval(session=tf.Session())
         k_rte = b_c + np.sum(theta)
         gamma_rte = \
             Gamma(a_c, b_c / a_c).sample(
-                    sample_shape=(1,), seed=seed).eval(session=tf.Session()) + self.beta.sum(axis=0)
+                sample_shape=(1,), seed=seed).eval(session=tf.Session()) + self.beta.sum(axis=0)
         gamma_shp = \
             gamma_rte * theta * \
             Uniform(low=.85, high=1.15).sample(
@@ -235,7 +252,7 @@ class HPFScoring:
                 phi_st = i
                 for j in range(k):
                     phi[phi_st, j] = psi(gamma_shp[j]) - log(gamma_rte[j]) + psi(
-                            self.lam_shp[iid, j]) - log(self.lam_rte[iid, j])
+                        self.lam_shp[iid, j]) - log(self.lam_rte[iid, j])
                     if phi[phi_st, j] > maxval:
                         maxval = phi[phi_st, j]
                 for j in range(k):
@@ -243,7 +260,8 @@ class HPFScoring:
                     sumphi += phi[phi_st, j]
                 for j in range(k):
                     phi[phi_st, j] *= Y[i] / sumphi
-            gamma_rte = (k_shp / k_rte + self.beta.sum(axis=0, keepdims=True)).reshape(-1)
+            gamma_rte = (k_shp / k_rte + self.beta.sum(axis=0,
+                                                       keepdims=True)).reshape(-1)
             gamma_shp = a + phi.sum(axis=0)
             theta = gamma_shp / gamma_rte
             k_rte = add_k_rte + theta.sum()
@@ -267,7 +285,8 @@ class HPFScoring:
         result = np.where(np.isfinite(result))[0]
         if self.USE_FEEDBACK:
             alpha_id = int(self.match_feedback_manifest(set(input_stack)))
-            alpha_set = set(np.where(self.alpha[alpha_id] >= feedback_threshold)[0])
+            alpha_set = set(
+                np.where(self.alpha[alpha_id] >= feedback_threshold)[0])
             result = np.delete(result, list(alpha_set))
 
         def _sigmoid(x):
@@ -282,7 +301,8 @@ class HPFScoring:
                 "package_name": self.id_package_dict[package_id],
                 "topic_list": []  # We don't have topics for this ecosystem!!
             }
-            # At least one percent probability is required for recommendation to go through.
+            # At least one percent probability is required for recommendation to
+            # go through.
             if recommendation['cooccurrence_probability'] > 0.01:
                 companion_recomendations.append(recommendation)
         return companion_recomendations

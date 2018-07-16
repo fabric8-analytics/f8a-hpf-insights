@@ -1,6 +1,7 @@
 """Some helper functions."""
 
 import numpy as np
+import logging
 
 
 def convert_string2bool_env(parameter):
@@ -43,3 +44,21 @@ def non_zero_entries(mat):
             if mat[i, j] > 0:
                 indices.append((i, j))
     return tuple(indices)
+
+
+def normalise(attribute):
+    """Normalize a list between 0-1."""
+    _min = attribute.min()
+    _min_max = attribute.max() - _min
+    attribute = np.array(
+        [(value - _min) / _min_max for value in attribute])
+    return attribute
+
+
+def remove_temp_files():
+    """Remove the files generated under the HPF folder."""
+    try:
+        subprocess.run('rm /tmp/hpf/*.*', shell=True)
+    except Exception as e:
+        logger.error("Error deleting /tmp/hpf")
+        logger.error("Error {}".format(e))
