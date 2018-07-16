@@ -76,19 +76,19 @@ class HPFScoring:
         theta_matrix_filename = os.path.join(
             HPF_SCORING_REGION, HPF_output_user_matrix)
         self.datastore.download_file(
-            theta_matrix_filename, "/tmp/user_matrix.npz")
-        sparse_matrix = sparse.load_npz('/tmp/user_matrix.npz')
+            theta_matrix_filename, "/tmp/hpf/user_matrix.npz")
+        sparse_matrix = sparse.load_npz('/tmp/hpf/user_matrix.npz')
         self.theta = sparse_matrix.toarray()
         del(sparse_matrix)
-        os.remove("/tmp/user_matrix.npz")
+        os.remove("/tmp/hpf/user_matrix.npz")
         beta_matrix_filename = os.path.join(
             HPF_SCORING_REGION, HPF_output_item_matrix)
         self.datastore.download_file(
-            beta_matrix_filename, "/tmp/item_matrix.npz")
-        sparse_matrix = sparse.load_npz('/tmp/item_matrix.npz')
+            beta_matrix_filename, "/tmp/hpf/item_matrix.npz")
+        sparse_matrix = sparse.load_npz('/tmp/hpf/item_matrix.npz')
         self.beta = sparse_matrix.toarray()
         del(sparse_matrix)
-        os.remove("/tmp/item_matrix.npz")
+        os.remove("/tmp/hpf/item_matrix.npz")
         package_id_dict_filename = os.path.join(
             HPF_SCORING_REGION, HPF_output_package_id_dict)
         self.package_id_dict = self.datastore.read_json_file(
