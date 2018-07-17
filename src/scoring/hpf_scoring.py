@@ -187,7 +187,7 @@ class HPFScoring:
         :return package_topic_dict: The topics associated with the packages
         in the input_stack+recommendation.
         """
-        highest_indices = result.argsort()[-MAX_COMPANION_REC_COUNT:len(result)]
+        highest_indices = result.argsort()[::-1][:MAX_COMPANION_REC_COUNT]
         companion_recommendation = []
         for package_id in highest_indices:
             recommendation = {
