@@ -41,8 +41,7 @@ if HPF_SCORING_REGION != "":
     s3_object = S3DataStore(src_bucket_name=AWS_S3_BUCKET_NAME,
                             access_key=AWS_S3_ACCESS_KEY_ID,
                             secret_key=AWS_S3_SECRET_ACCESS_KEY)
-    app.scoring_object = HPFScoring(datastore=s3_object,
-                                    scoring_region=HPF_SCORING_REGION)
+    app.scoring_object = HPFScoring(datastore=s3_object)
     app.scoring_status = True
 else:
     app.scoring_status = False

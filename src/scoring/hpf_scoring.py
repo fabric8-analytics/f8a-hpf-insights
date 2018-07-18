@@ -10,6 +10,7 @@ import tensorflow as tf
 import os
 from flask import current_app
 from collections import defaultdict
+from src.data_store.s3_data_store import S3DataStore
 from src.config import (UNKNOWN_PACKAGES_THRESHOLD,
                         MAX_COMPANION_REC_COUNT,
                         HPF_SCORING_REGION,
@@ -27,25 +28,26 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 class HPFScoring:
     """The HPF Model scoring class."""
 
-    def __init__(self, datastore=None,
-                 scoring_region=HPF_SCORING_REGION):
+    def __init__(self, datastore=None):
         """Set the variables and load model data."""
         self.datastore = datastore
-        self.scoring_region = scoring_region
-        self.package_id_dict = None
-        self.id_package_dict = None
+        self.package_id_dict = dict()
+        self.id_package_dict = dict()
         self.beta = None
         self.theta = None
-        self.manifest_id_dict = None
+        self.manifest_id_dict = dict()
         self.manifests = 0
         self.packages = 0
         self.epsilon = Gamma(tf.constant(
-            a_c), tf.constant(a_c) / tf.constant(b_c)).eval(session=tf.Session())
+            a_c), tf.constant(a_c) / tf.constant(b_c)).\
+            prob(tf.constant(K, dtype=tf.float32)).eval(session=tf.Session())
         self.theta_dummy = Poisson(np.array([self.epsilon * Gamma(tf.constant(
-            a), self.epsilon).eval(session=tf.Session())] * K, dtype=float))
-        self.loadS3()
-        self.dummy_result = self.theta_dummy.prob(
-            self.beta).eval(session=tf.Session())
+            a), self.epsilon).prob(tf.constant(K, dtype=tf.float32)).
+            eval(session=tf.Session())] * K, dtype=float))
+        if isinstance(datastore, S3DataStore):
+            self.loadS3()
+            self.dummy_result = self.theta_dummy.prob(
+                self.beta).eval(session=tf.Session())
 
     @staticmethod
     def _getsizeof(attribute):
@@ -57,22 +59,22 @@ class HPFScoring:
 
     def model_details(self):
         """Return the model details size."""
-        return(
-            "The model will be scored against\
-                {} Packages,\
-                {} Manifests,\
-                Theta matrix of size {}, and\
-                Beta matrix of size {}.".format(
+        details = """The model will be scored against
+        {} Packages,
+        {} Manifests,
+        Theta matrix of size {}, and
+        Beta matrix of size {}.""".\
+            format(
                 len(self.package_id_dict),
                 len(self.manifest_id_dict),
                 HPFScoring._getsizeof(self.theta),
                 HPFScoring._getsizeof(self.beta))
-        )
+        return details
 
     def loadS3(self):
         """Load the model data from AWS S3."""
         theta_matrix_filename = os.path.join(
-            self.scoring_region, HPF_output_user_matrix)
+            HPF_SCORING_REGION, HPF_output_user_matrix)
         self.datastore.download_file(
             theta_matrix_filename, "/tmp/user_matrix.npz")
         sparse_matrix = sparse.load_npz('/tmp/user_matrix.npz')
@@ -80,7 +82,7 @@ class HPFScoring:
         del(sparse_matrix)
         os.remove("/tmp/user_matrix.npz")
         beta_matrix_filename = os.path.join(
-            self.scoring_region, HPF_output_item_matrix)
+            HPF_SCORING_REGION, HPF_output_item_matrix)
         self.datastore.download_file(
             beta_matrix_filename, "/tmp/item_matrix.npz")
         sparse_matrix = sparse.load_npz('/tmp/item_matrix.npz')
@@ -88,12 +90,12 @@ class HPFScoring:
         del(sparse_matrix)
         os.remove("/tmp/item_matrix.npz")
         package_id_dict_filename = os.path.join(
-            self.scoring_region, HPF_output_package_id_dict)
+            HPF_SCORING_REGION, HPF_output_package_id_dict)
         self.package_id_dict = self.datastore.read_json_file(
             package_id_dict_filename)
         self.id_package_dict = {x: n for n, x in self.package_id_dict.items()}
         manifest_id_dict_filename = os.path.join(
-            self.scoring_region, HPF_output_manifest_id_dict)
+            HPF_SCORING_REGION, HPF_output_manifest_id_dict)
         self.manifest_id_dict = self.datastore.read_json_file(
             manifest_id_dict_filename)
         self.manifest_id_dict = {n: set(x)
