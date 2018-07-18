@@ -1,4 +1,4 @@
-"""Test fucntionalities of hpf scoring."""
+"""Test functionalities of hpf scoring."""
 
 from src.scoring.hpf_scoring import HPFScoring
 from edward.models import Poisson
@@ -29,7 +29,7 @@ def test_model_details():
 
 
 def test_get_sizeof():
-    """Test Static _getsizeof method."""
+    """Test static _getsizeof method."""
     int_value = 1
     int_size = 2.6702880859375e-05
     assert HPFScoring._getsizeof(int_value) == "{} MB".format(int_size)
