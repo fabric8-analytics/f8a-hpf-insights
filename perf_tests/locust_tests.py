@@ -100,9 +100,6 @@ class HPFInsightsBehaviour(TaskSet):
                                     data=json.dumps(get_packages()),
                                     headers={"Content-type": "application/json"})
 
-        stats["host-distribution"][response.json()["host_name"]] += 1
-        print(stats["host-distribution"])
-
 
 class HPFInsightsLocust(HttpLocust):
     """This class defines the params for the load testing piece."""
