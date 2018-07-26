@@ -74,33 +74,34 @@ def readiness():
 def hpf_scoring():
     """Endpoint to serve recommendations."""
     response_json = []
-    response_json_final = {"host_name": request.host, "result": response_json}
     if app.scoring_status:
         input_json = request.get_json()
         for input_stack in input_json:
+            output_json = dict()
             if input_stack["ecosystem"] != HPF_SCORING_REGION:
-                response_json.append(
-                    {"Error": "Ecosystems don't match. \
+                output_json = {"Error": "Ecosystems don't match. \
                     GIVEN:{} EXPECTED:{}".format(input_stack["ecosystem"],
-                                                 HPF_SCORING_REGION)})
+                                                 HPF_SCORING_REGION)}
             else:
-                companion_recommendation, package_to_topic_dict,\
+                companion_recommendation, package_to_topic_dict, \
                     missing_packages = app.scoring_object.predict(
                         input_stack['package_list'])
                 current_app.logger.debug(
                     'The companion recommendation are {}'.format(companion_recommendation))
-                response_json.append({
+                output_json = {
+                    "alternate_packages": {},
                     "missing_packages": missing_packages,
                     "companion_packages": companion_recommendation,
                     "ecosystem": input_stack["ecosystem"],
                     "package_to_topic_dict": package_to_topic_dict,
-                })
+                }
+            response_json.append(output_json)
     else:
         current_app.logger.error(
             'No scoring region provided. HPF_SCORING_REGION is {}'.format(HPF_SCORING_REGION))
         response_json.append(
             {"Error": "No scoring region provided"})
-    return flask.jsonify(response_json_final)
+    return flask.jsonify(response_json)
 
 
 @app.route('/api/v1/model_details', methods=['GET'])
