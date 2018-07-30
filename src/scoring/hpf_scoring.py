@@ -166,18 +166,19 @@ class HPFScoring:
                 result = result.prob(self.beta)
             with tf.Session(graph=graph_new) as sess_new:
                 result = sess_new.run(result)
-        normalised_result = self.normalize_result(result)
+        normalised_result = self.normalize_result(result, input_id_set)
         return self.filter_recommendation(normalised_result)
 
-    def normalize_result(self, result):
+    def normalize_result(self, result, input_id_set):
         """Normalise the probability score of the resulting recommendation.
 
-        :param result: The Unnormalised recommendation result array.
-        :return result: The normalised recommendation result array.
+        :param result: The non-normalised recommendation result array.
+        :param input_id_set: The user's input package ids.
+        :return normalised_result: The normalised recommendation result array.
         """
-        normalised_result = np.zeros([self.packages])
-        for i in range(self.packages):
-            normalised_result[i] = result[i].mean()
+        normalised_result = np.array([-1.0 if i in input_id_set
+                                      else result[i].mean()
+                                      for i in range(self.packages)])
         return normalised_result
 
     def filter_recommendation(self, result):
