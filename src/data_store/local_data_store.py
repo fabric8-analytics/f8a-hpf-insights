@@ -34,11 +34,6 @@ class LocalDataStore(AbstractDataStore):
         """Remove JSON file from the data_input source file path."""
         return os.remove(os.path.join(self.src_dir, filename))
 
-    # def read_generic_file(self, filename):
-    #     """Read a file and return its contents."""
-    #     with open(os.path.join(self.src_dir, filename)) as fileObj:
-    #         return fileObj.read()
-
     def read_json_file(self, filename):
         """Read JSON file from the data_input source."""
         with open(os.path.join(self.src_dir, filename)) as json_fileobj:
