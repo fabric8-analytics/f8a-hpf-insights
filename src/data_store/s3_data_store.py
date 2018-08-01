@@ -10,7 +10,7 @@ from src.config import (AWS_S3_ENDPOINT_URL)
 from src.data_store.abstract_data_store import AbstractDataStore
 
 
-class S3DataStore(AbstractDataStore):
+class S3DataStore(AbstractDataStore):  # pragma: no cover
     """Class that represents S3 data storage."""
 
     def __init__(self, src_bucket_name, access_key, secret_key):
