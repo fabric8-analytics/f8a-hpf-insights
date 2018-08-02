@@ -1,6 +1,7 @@
 """Class that represents AWS S3 based data storage."""
 
 import json
+from collections import OrderedDict
 import os
 import boto3
 boto3.set_stream_logger(name='botocore')
@@ -33,7 +34,7 @@ class S3DataStore(AbstractDataStore):  # pragma: no cover
 
     def read_json_file(self, filename):
         """Read JSON file from the S3 bucket."""
-        return json.loads(self.read_generic_file(filename))
+        return json.loads(self.read_generic_file(filename), object_hook=OrderDict)
 
     def read_generic_file(self, filename):
         """Read a file from the S3 bucket."""

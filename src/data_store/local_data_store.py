@@ -3,6 +3,7 @@
 import fnmatch
 import json
 import os
+from collections import OrderedDict
 
 from src.data_store.abstract_data_store import AbstractDataStore
 
@@ -36,8 +37,8 @@ class LocalDataStore(AbstractDataStore):
 
     def read_json_file(self, filename):
         """Read JSON file from the data_input source."""
-        with open(os.path.join(self.src_dir, filename)) as json_fileobj:
-            return json.load(json_fileobj)
+        with open(os.path.join(self.src_dir, filename), "r") as json_fileobj:
+            return json.load(json_fileobj, object_hook=OrderedDict)
 
     def read_all_json_files(self):
         """Read all the files from the data_input source."""

@@ -4,10 +4,7 @@ from src.data_store.local_data_store import LocalDataStore
 import unittest
 import os
 from src.config import (HPF_SCORING_REGION,
-                        HPF_output_package_id_dict,
-                        HPF_output_manifest_id_dict,
-                        HPF_output_user_matrix,
-                        HPF_output_item_matrix)
+                        HPF_output_package_id_dict)
 
 
 class TestLocalDataStoreMethods(unittest.TestCase):
