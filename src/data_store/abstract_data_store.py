@@ -3,7 +3,7 @@
 import abc
 
 
-class AbstractDataStore(metaclass=abc.ABCMeta):
+class AbstractDataStore(metaclass=abc.ABCMeta):  # pragma: no cover
     """Class that represents abstract data storage."""
 
     @abc.abstractmethod

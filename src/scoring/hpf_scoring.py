@@ -9,8 +9,10 @@ from edward.models import Gamma
 import tensorflow as tf
 import os
 from flask import current_app
+import logging
 from collections import defaultdict
 from src.data_store.s3_data_store import S3DataStore
+from src.data_store.local_data_store import LocalDataStore
 from src.config import (UNKNOWN_PACKAGES_THRESHOLD,
                         MAX_COMPANION_REC_COUNT,
                         HPF_SCORING_REGION,
@@ -23,6 +25,12 @@ from src.config import (UNKNOWN_PACKAGES_THRESHOLD,
 
 # To turn off tensorflow CPU warning
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+
+if current_app:
+    _logger = current_app.logger
+else:
+    _logger = logging.getLogger(__file__)
+    _logger.setLevel(level=logging.DEBUG)
 
 
 class HPFScoring:
@@ -45,9 +53,13 @@ class HPFScoring:
             a), self.epsilon).prob(tf.constant(K, dtype=tf.float32)).
             eval(session=tf.Session())] * K, dtype=float))
         if isinstance(datastore, S3DataStore):
-            self.loadS3()
-            self.dummy_result = self.theta_dummy.prob(
-                self.beta).eval(session=tf.Session())
+            self.load_s3()
+        else:
+            self.load_local()
+        self.manifests = self.theta.shape[0]
+        self.packages = self.beta.shape[0]
+        self.dummy_result = self.theta_dummy.prob(
+            self.beta).eval(session=tf.Session())
 
     @staticmethod
     def _getsizeof(attribute):
@@ -71,7 +83,7 @@ class HPFScoring:
                 HPFScoring._getsizeof(self.beta))
         return details
 
-    def loadS3(self):
+    def load_s3(self):
         """Load the model data from AWS S3."""
         theta_matrix_filename = os.path.join(
             HPF_SCORING_REGION, HPF_output_user_matrix)
@@ -89,6 +101,24 @@ class HPFScoring:
         self.beta = sparse_matrix.toarray()
         del(sparse_matrix)
         os.remove("/tmp/item_matrix.npz")
+        self.load_jsons()
+
+    def load_local(self):
+        """Load the model data from AWS S3."""
+        theta_matrix_filename = os.path.join(
+            self.datastore.src_dir, HPF_SCORING_REGION, HPF_output_user_matrix)
+        sparse_matrix = sparse.load_npz(theta_matrix_filename)
+        self.theta = sparse_matrix.toarray()
+        del(sparse_matrix)
+        beta_matrix_filename = os.path.join(self.datastore.src_dir,
+                                            HPF_SCORING_REGION, HPF_output_item_matrix)
+        sparse_matrix = sparse.load_npz(beta_matrix_filename)
+        self.beta = sparse_matrix.toarray()
+        del(sparse_matrix)
+        self.load_jsons()
+
+    def load_jsons(self):
+        """Load Json files via common methods for S3 and local."""
         package_id_dict_filename = os.path.join(
             HPF_SCORING_REGION, HPF_output_package_id_dict)
         self.package_id_dict = self.datastore.read_json_file(
@@ -100,8 +130,6 @@ class HPFScoring:
             manifest_id_dict_filename)
         self.manifest_id_dict = {n: set(x)
                                  for n, x in self.manifest_id_dict.items()}
-        self.manifests = self.theta.shape[0]
-        self.packages = self.beta.shape[0]
 
     def predict(self, input_stack):
         """Prediction function.
@@ -130,12 +158,12 @@ class HPFScoring:
             companion_recommendation = self.folding_in(
                 input_id_set)
         else:
-            current_app.logger.error(
+            _logger.error(
                 "{} length of missing packages beyond unknow threshold value of {}".format(
                     len(missing_packages), UNKNOWN_PACKAGES_THRESHOLD))
         return companion_recommendation, package_topic_dict, list(missing_packages)
 
-    def match_manifest(self, input_id_set):
+    def match_manifest(self, input_id_set):  # pragma: no cover
         """Find a manifest list that matches user's input package list and return its index.
 
         :param input_id_set: A set containing package ids of user's input package list.
@@ -146,7 +174,7 @@ class HPFScoring:
                 break
         else:
             manifest_id = -1
-        current_app.logger.debug(
+        _logger.debug(
             "input_id_set {} and manifest_id {}".format(input_id_set, manifest_id))
         return manifest_id
 
@@ -169,28 +197,32 @@ class HPFScoring:
         normalised_result = self.normalize_result(result, input_id_set)
         return self.filter_recommendation(normalised_result)
 
-    def normalize_result(self, result, input_id_set):
+    def normalize_result(self, result, input_id_set, array_len=None):
         """Normalise the probability score of the resulting recommendation.
 
         :param result: The non-normalised recommendation result array.
         :param input_id_set: The user's input package ids.
+        :param array_len: length of normalised result array.
         :return normalised_result: The normalised recommendation result array.
         """
+        if array_len is None:
+            array_len = self.packages
         normalised_result = np.array([-1.0 if i in input_id_set
                                       else result[i].mean()
-                                      for i in range(self.packages)])
+                                      for i in range(array_len)])
         return normalised_result
 
-    def filter_recommendation(self, result):
+    def filter_recommendation(self, result, max_count=MAX_COMPANION_REC_COUNT):
         """Filter companion recommendations based on sorted threshold score.
 
         :param result: The unfiltered companion recommendation result.
+        :param max_count: Maximum number of recommendations to return.
         :return companion_recommendation: The filtered list of recommended companion packages
         along with condifence score.
         :return package_topic_dict: The topics associated with the packages
         in the input_stack+recommendation.
         """
-        highest_indices = result.argsort()[-MAX_COMPANION_REC_COUNT:len(result)]
+        highest_indices = result.argsort()[-max_count:len(result)]
         companion_recommendation = []
         for package_id in highest_indices:
             recommendation = {

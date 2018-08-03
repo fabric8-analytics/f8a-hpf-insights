@@ -3,6 +3,7 @@
 import fnmatch
 import json
 import os
+from collections import OrderedDict
 
 from src.data_store.abstract_data_store import AbstractDataStore
 
@@ -25,7 +26,7 @@ class LocalDataStore(AbstractDataStore):
             for basename in files:
                 if fnmatch.fnmatch(basename, "*.json"):
                     filename = os.path.join(root, basename)
-                    filename = filename[len(self.src_dir):]
+                    filename = filename[len(self.src_dir) + 1:]
                     list_filenames.append(filename)
         list_filenames.sort()
         return list_filenames
@@ -34,15 +35,10 @@ class LocalDataStore(AbstractDataStore):
         """Remove JSON file from the data_input source file path."""
         return os.remove(os.path.join(self.src_dir, filename))
 
-    def read_generic_file(self, filename):
-        """Read a file and return its contents."""
-        with open(os.path.join(self.src_dir, filename)) as fileObj:
-            return fileObj.read()
-
     def read_json_file(self, filename):
         """Read JSON file from the data_input source."""
-        with open(os.path.join(self.src_dir, filename)) as json_fileobj:
-            return json.load(json_fileobj)
+        with open(os.path.join(self.src_dir, filename), "r") as json_fileobj:
+            return json.load(json_fileobj, object_hook=OrderedDict)
 
     def read_all_json_files(self):
         """Read all the files from the data_input source."""

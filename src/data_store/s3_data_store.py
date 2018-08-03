@@ -1,6 +1,7 @@
 """Class that represents AWS S3 based data storage."""
 
 import json
+from collections import OrderedDict
 import os
 import boto3
 boto3.set_stream_logger(name='botocore')
@@ -10,7 +11,7 @@ from src.config import (AWS_S3_ENDPOINT_URL)
 from src.data_store.abstract_data_store import AbstractDataStore
 
 
-class S3DataStore(AbstractDataStore):
+class S3DataStore(AbstractDataStore):  # pragma: no cover
     """Class that represents S3 data storage."""
 
     def __init__(self, src_bucket_name, access_key, secret_key):
@@ -33,7 +34,7 @@ class S3DataStore(AbstractDataStore):
 
     def read_json_file(self, filename):
         """Read JSON file from the S3 bucket."""
-        return json.loads(self.read_generic_file(filename))
+        return json.loads(self.read_generic_file(filename), object_hook=OrderDict)
 
     def read_generic_file(self, filename):
         """Read a file from the S3 bucket."""
@@ -44,43 +45,27 @@ class S3DataStore(AbstractDataStore):
 
     def list_files(self, prefix=None, max_count=None):
         """List all the files in the S3 bucket."""
-        list_filenames = []
-        if prefix is None:
-            objects = self.bucket.objects.all()
-        else:
-            objects = self.bucket.objects.filter(Prefix=prefix)
-        list_filenames = [x.key for x in objects]
-        if max_count is not None:
-            list_filenames = list_filenames[:max_count]
-        return list_filenames
+        raise NotImplementedError()
 
     def read_all_json_files(self):
         """Read all the files from the S3 bucket."""
-        list_filenames = self.list_files(prefix=None)
-        list_contents = []
-        for file_name in list_filenames:
-            contents = self.read_json_file(filename=file_name)
-            list_contents.append((file_name, contents))
-        return list_contents
+        raise NotImplementedError()
 
     def write_json_file(self, filename, contents):
         """Write JSON file into S3 bucket."""
         self.s3_resource.Object(self.bucket_name, filename).put(
             Body=json.dumps(contents))
-        return None
 
     def upload_file(self, src, target):
         """Upload file into data store."""
         self.bucket.upload_file(src, target)
-        return None
 
     def download_file(self, src, target):
         """Download file from data store."""
         self.bucket.download_file(
             src, target)
-        return None
 
-    def iterate_bucket_items(self, ecosystem='npm'):
+    def iterate_bucket_items(self, ecosystem='maven'):
         """Iterate over all objects in a given s3 bucket.
 
         See:
@@ -89,23 +74,11 @@ class S3DataStore(AbstractDataStore):
         :param bucket: name of s3 bucket
         :return: dict of metadata for an object
         """
-        client = self.session.client('s3')
-        page = client.list_objects_v2(Bucket=self.bucket_name, Prefix=ecosystem)
-        yield [obj['Key'] for obj in page['Contents']]
-        while page['IsTruncated'] is True:
-            page = client.list_objects_v2(Bucket=self.bucket_name, Prefix=ecosystem,
-                                          ContinuationToken=page['NextContinuationToken'])
-            yield [obj['Key'] for obj in page['Contents']]
+        raise NotImplementedError()
 
     def list_folders(self, prefix=None):
         """List all "folders" inside src_bucket."""
-        client = self.session.client('s3')
-        result = client.list_objects(
-            Bucket=self.bucket_name, Prefix=prefix + '/', Delimiter='/')
-        folders = result.get('CommonPrefixes')
-        if not folders:
-            return []
-        return [folder['Prefix'] for folder in folders]
+        raise NotImplementedError()
 
     def upload_folder_to_s3(self, folder_path, prefix=''):
         """Upload(Sync) a folder to S3.

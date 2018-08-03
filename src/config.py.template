@@ -11,6 +11,7 @@ AWS_S3_BUCKET_NAME = os.environ.get("AWS_S3_BUCKET_NAME", "hpf-insights")
 # Flask endpoint constants
 SERVICE_PORT = "6006"
 SERVICE_TIMEOUT = "900"
+USE_CLOUD_SERVICES = os.environ.get("USE_CLOUD_SERVICES", False)
 
 # Scoring constants
 HPF_SCORING_REGION = os.environ.get("HPF_SCORING_REGION", "maven")
