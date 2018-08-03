@@ -10,7 +10,8 @@ COPY ./requirements.txt /requirements.txt
 RUN pip3 install -r /requirements.txt && rm /requirements.txt
 
 COPY ./src /src
-COPY ./src/config.py.template /src/config.py
+COPY ./src/config.py /src/config.py
+COPY ./deployments /deployments
 
 ADD ./entrypoint.sh /bin/entrypoint.sh
 RUN chmod +x /bin/entrypoint.sh

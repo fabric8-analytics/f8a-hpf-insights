@@ -2,21 +2,18 @@
 
 import os
 import time
-from src.data_store.local_data_store import LocalDataStore
 from src.data_store.s3_data_store import S3DataStore
 from src.training.data_preprocessing import DataPreprocessing
 from src.training.hyper_parameter_tuning import HyperParameterTuning
 from src.training.generate_matrix import GenerateMatrix
 from src.config import (AWS_S3_ACCESS_KEY_ID,
                         AWS_S3_SECRET_ACCESS_KEY,
-                        AWS_S3_BUCKET_NAME,
-                        HPF_SCORING_REGION)
+                        AWS_S3_BUCKET_NAME)
 import logging
 
 logging.basicConfig()
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
-
 
 def trainingS3():
     """Call the preprocess module. with S3 as datastore."""
@@ -58,4 +55,6 @@ def trainingS3():
 
 
 if __name__ == '__main__':
+    import sys
+    print(sys.path)
     trainingS3()
