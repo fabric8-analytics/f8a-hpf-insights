@@ -13,6 +13,7 @@ import logging
 from collections import defaultdict
 from src.data_store.s3_data_store import S3DataStore
 from src.data_store.local_data_store import LocalDataStore
+from src.utils import convert_string2bool_env
 from src.config import (UNKNOWN_PACKAGES_THRESHOLD,
                         MAX_COMPANION_REC_COUNT,
                         HPF_SCORING_REGION,
@@ -20,12 +21,16 @@ from src.config import (UNKNOWN_PACKAGES_THRESHOLD,
                         HPF_output_manifest_id_dict,
                         HPF_output_user_matrix,
                         HPF_output_item_matrix,
+                        HPF_output_feedback_matrix,
                         a, a_c, c, c_c,
-                        b_c, d_c, K)
+                        b_c, d_c, K,
+                        USE_FEEDBACK,
+                        feedback_threshold)
 
 # To turn off tensorflow CPU warning
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
+USE_FEEDBACK = convert_string2bool_env(USE_FEEDBACK)
 if current_app:
     _logger = current_app.logger
 else:
@@ -45,7 +50,9 @@ class HPFScoring:
         self.id_package_dict = dict()
         self.beta = None
         self.theta = None
+        self.alpha = None
         self.manifest_id_dict = dict()
+        self.feedback_id_dict = dict()
         self.manifests = 0
         self.packages = 0
         self.epsilon = Gamma(tf.constant(
@@ -103,6 +110,14 @@ class HPFScoring:
         self.beta = sparse_matrix.toarray()
         del(sparse_matrix)
         os.remove("/tmp/item_matrix.npz")
+        if USE_FEEDBACK:  # pragma: no cover
+            alpha_matrix_filename = os.path.join(
+                HPF_SCORING_REGION, HPF_output_feedback_matrix)
+            self.datastore.download_file(
+                alpha_matrix_filename, "/tmp/alpha_matrix.npz")
+            sparse_matrix = sparse.load_npz("/tmp/alpha_matrix.npz")
+            self.alpha = sparse_matrix.toarray()
+            del(sparse_matrix)
         self.load_jsons()
 
     def load_local(self):
@@ -112,11 +127,19 @@ class HPFScoring:
         sparse_matrix = sparse.load_npz(theta_matrix_filename)
         self.theta = sparse_matrix.toarray()
         del(sparse_matrix)
-        beta_matrix_filename = os.path.join(self.datastore.src_dir,
-                                            HPF_SCORING_REGION, HPF_output_item_matrix)
+        beta_matrix_filename = os.path.join(
+            self.datastore.src_dir,
+            HPF_SCORING_REGION, HPF_output_item_matrix)
         sparse_matrix = sparse.load_npz(beta_matrix_filename)
         self.beta = sparse_matrix.toarray()
         del(sparse_matrix)
+        if USE_FEEDBACK:  # pragma: no cover
+            alpha_matrix_filename = os.path.join(
+                self.datastore.src_dir,
+                HPF_SCORING_REGION, HPF_output_feedback_matrix)
+            sparse_matrix = sparse.load_npz(alpha)
+            self.alpha = sparse_matrix.toarray()
+            del(sparse_matrix)
         self.load_jsons()
 
     def load_jsons(self):
@@ -132,6 +155,13 @@ class HPFScoring:
             manifest_id_dict_filename)
         self.manifest_id_dict = {n: set(x)
                                  for n, x in self.manifest_id_dict.items()}
+        if USE_FEEDBACK:  # pragma: no cover
+            feedback_id_dict_filename = os.path.join(
+                HPF_SCORING_REGION, HPF_output_feedback_id_dict)
+            self.feedback_id_dict = self.datastore.read_json_file(
+                feedback_id_dict_filename)
+            self.feedback_id_dict = {
+                n: set(x) for n, x in self.feedback_id_dict.items()}
 
     def predict(self, input_stack):
         """Prediction function.
@@ -185,6 +215,21 @@ class HPFScoring:
             "input_id_set {} and manifest_id {}".format(input_id_set, manifest_id))
         return closest_manifest_id
 
+    def match_feedback_manifest(self, input_id_set):  # pragma: no cover
+        """Find a feedback manifest that matches user's input package list and return its index.
+
+        :param input_id_set: A set containing package ids of user's input package list.
+        :return manifest_id: The index of the matched feedback manifest.
+        """
+        for manifest_id, dependency_set in self.feedback_id_dict.items():
+            if dependency_set == input_id_set:
+                break
+        else:
+            manifest_id = -1
+        _logger.debug(
+            "input_id_set {} and feedback_manifest_id {}".format(input_id_set, manifest_id))
+        return manifest_id
+
     def folding_in(self, input_id_set):
         """Folding in logic for prediction.
 
@@ -229,8 +274,13 @@ class HPFScoring:
         :return package_topic_dict: The topics associated with the packages
         in the input_stack+recommendation.
         """
-        highest_indices = result.argsort()[-max_count:len(result)]
+        highest_indices = set(result.argsort()[-max_count:len(result)])
         companion_recommendation = []
+        if USE_FEEDBACK:  # pragma: no cover
+            alpha_id = int(self.match_feedback_manifest(input_id_set))
+            if alpha_id != -1:
+                alpha_set = set(np.where(alpha[alpha_id] >= feedback_threshold))
+                highest_indices = highest_indices.intersection(alpha_set)
         for package_id in highest_indices:
             recommendation = {
                 "cooccurrence_probability": result[package_id] * 100,
