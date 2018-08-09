@@ -88,11 +88,11 @@ class EvaluationMetric:
     def apak(self, i):
         """Return average precision@k for the ith row of the result."""
         avg_sum = 0.0
-        for at_k in range(1, MAX_COMPANION_REC_COUNT):
+        for at_k in range(1, MAX_COMPANION_REC_COUNT * 2):
             p = self.pak(i, at_k=at_k)
             r = self.rak(i, at_k=at_k)
-            avg_sum = p * r
-        return avg_sum / MAX_COMPANION_REC_COUNT
+            avg_sum += p * r
+        return avg_sum / MAX_COMPANION_REC_COUNT * 2
 
     def mpak(self):
         """Return mean average precision@k for all rows of the result."""
