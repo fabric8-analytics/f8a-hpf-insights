@@ -19,6 +19,7 @@ from src.config import (UNKNOWN_PACKAGES_THRESHOLD,
                         HPF_SCORING_REGION,
                         HPF_output_package_id_dict,
                         HPF_output_manifest_id_dict,
+                        HPF_output_feedback_id_dict,
                         HPF_output_user_matrix,
                         HPF_output_item_matrix,
                         HPF_output_feedback_matrix,
@@ -30,7 +31,7 @@ from src.config import (UNKNOWN_PACKAGES_THRESHOLD,
 # To turn off tensorflow CPU warning
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
-USE_FEEDBACK = convert_string2bool_env(USE_FEEDBACK)
+
 if current_app:
     _logger = current_app.logger
 else:
@@ -43,9 +44,10 @@ else:
 class HPFScoring:
     """The HPF Model scoring class."""
 
-    def __init__(self, datastore=None):
+    def __init__(self, datastore=None, USE_FEEDBACK=USE_FEEDBACK):
         """Set the variables and load model data."""
         self.datastore = datastore
+        self.USE_FEEDBACK = convert_string2bool_env(USE_FEEDBACK)
         self.package_id_dict = dict()
         self.id_package_dict = dict()
         self.beta = None
@@ -110,7 +112,7 @@ class HPFScoring:
         self.beta = sparse_matrix.toarray()
         del(sparse_matrix)
         os.remove("/tmp/item_matrix.npz")
-        if USE_FEEDBACK:  # pragma: no cover
+        if self.USE_FEEDBACK:  # pragma: no cover
             alpha_matrix_filename = os.path.join(
                 HPF_SCORING_REGION, HPF_output_feedback_matrix)
             self.datastore.download_file(
@@ -133,11 +135,11 @@ class HPFScoring:
         sparse_matrix = sparse.load_npz(beta_matrix_filename)
         self.beta = sparse_matrix.toarray()
         del(sparse_matrix)
-        if USE_FEEDBACK:  # pragma: no cover
+        if self.USE_FEEDBACK:  # pragma: no cover
             alpha_matrix_filename = os.path.join(
                 self.datastore.src_dir,
                 HPF_SCORING_REGION, HPF_output_feedback_matrix)
-            sparse_matrix = sparse.load_npz(alpha)
+            sparse_matrix = sparse.load_npz(alpha_matrix_filename)
             self.alpha = sparse_matrix.toarray()
             del(sparse_matrix)
         self.load_jsons()
@@ -155,7 +157,7 @@ class HPFScoring:
             manifest_id_dict_filename)
         self.manifest_id_dict = {n: set(x)
                                  for n, x in self.manifest_id_dict.items()}
-        if USE_FEEDBACK:  # pragma: no cover
+        if self.USE_FEEDBACK:  # pragma: no cover
             feedback_id_dict_filename = os.path.join(
                 HPF_SCORING_REGION, HPF_output_feedback_id_dict)
             self.feedback_id_dict = self.datastore.read_json_file(
@@ -247,7 +249,7 @@ class HPFScoring:
             with tf.Session(graph=graph_new) as sess_new:
                 result = sess_new.run(result)
         normalised_result = self.normalize_result(result, input_id_set)
-        return self.filter_recommendation(normalised_result)
+        return self.filter_recommendation(normalised_result, input_id_set)
 
     def normalize_result(self, result, input_id_set, array_len=None):
         """Normalise the probability score of the resulting recommendation.
@@ -264,7 +266,7 @@ class HPFScoring:
                                       for i in range(array_len)])
         return normalised_result
 
-    def filter_recommendation(self, result, max_count=MAX_COMPANION_REC_COUNT):
+    def filter_recommendation(self, result, input_id_set, max_count=MAX_COMPANION_REC_COUNT):
         """Filter companion recommendations based on sorted threshold score.
 
         :param result: The unfiltered companion recommendation result.
@@ -276,11 +278,13 @@ class HPFScoring:
         """
         highest_indices = set(result.argsort()[-max_count:len(result)])
         companion_recommendation = []
-        if USE_FEEDBACK:  # pragma: no cover
+        if self.USE_FEEDBACK:  # pragma: no cover
             alpha_id = int(self.match_feedback_manifest(input_id_set))
             if alpha_id != -1:
-                alpha_set = set(np.where(alpha[alpha_id] >= feedback_threshold))
+                alpha_set = set(
+                    np.where(self.alpha[alpha_id] >= feedback_threshold)[0])
                 highest_indices = highest_indices.intersection(alpha_set)
+
         for package_id in highest_indices:
             recommendation = {
                 "cooccurrence_probability": result[package_id] * 100,

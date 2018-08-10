@@ -16,6 +16,7 @@ class TestHPFScoringMethods(unittest.TestCase):
         super(TestHPFScoringMethods, self).__init__(*args, **kwargs)
         self.local_obj = LocalDataStore("tests/test_data")
         self.hpf_obj = HPFScoring(self.local_obj)
+        # self.hpf_obj_feedback = HPFScoring(self.local_obj, USE_FEEDBACK="True")
 
     def test_basic_object(self):
         """Test basic HPF object."""
