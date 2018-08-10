@@ -11,7 +11,7 @@ AWS_S3_BUCKET_NAME = os.environ.get("AWS_S3_BUCKET_NAME", "hpf-insights")
 # Flask endpoint constants
 SERVICE_PORT = "6006"
 SERVICE_TIMEOUT = "900"
-USE_CLOUD_SERVICES = os.environ.get("USE_CLOUD_SERVICES", False)
+USE_CLOUD_SERVICES = os.environ.get("USE_CLOUD_SERVICES", "False")
 
 # Scoring constants
 HPF_SCORING_REGION = os.environ.get("HPF_SCORING_REGION", "maven")
@@ -19,10 +19,10 @@ MAX_COMPANION_REC_COUNT = int(os.environ.get("MAX_COMPANION_REC_COUNT", "5"))
 UNKNOWN_PACKAGES_THRESHOLD = float(os.environ.get("UNKNOWN_PACKAGES_THRESHOLD", "0.3"))
 
 # Model filepaths
-HPF_output_package_id_dict = "scoring/package_id_dict.json"
-HPF_output_manifest_id_dict = "scoring/manifest_id_dict.json"
-HPF_output_user_matrix = "scoring/user_matrix.npz"
-HPF_output_item_matrix = "scoring/item_matrix.npz"
+HPF_output_package_id_dict = "scoring_test_2/package_id_dict.json"
+HPF_output_manifest_id_dict = "scoring_test_2/manifest_id_dict.json"
+HPF_output_user_matrix = "scoring_test_2/user_matrix.npz"
+HPF_output_item_matrix = "scoring_test_2/item_matrix.npz"
 
 # Model HyperParameters
 a = 0.5
