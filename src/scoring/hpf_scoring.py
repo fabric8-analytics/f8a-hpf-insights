@@ -31,6 +31,8 @@ if current_app:
 else:
     _logger = logging.getLogger(__file__)
     _logger.setLevel(level=logging.DEBUG)
+    consoleHandler = logging.StreamHandler()
+    _logger.addHandler(consoleHandler)
 
 
 class HPFScoring:
