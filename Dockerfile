@@ -10,6 +10,7 @@ COPY ./requirements.txt /requirements.txt
 RUN pip3 install -r /requirements.txt && rm /requirements.txt
 
 COPY ./src /src
+COPY ./tests/test_data /tests/test_data
 COPY ./src/config.py.template /src/config.py
 
 ADD ./entrypoint.sh /bin/entrypoint.sh

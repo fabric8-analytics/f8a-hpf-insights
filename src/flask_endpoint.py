@@ -8,6 +8,7 @@ from flask_cors import CORS
 from src.data_store.s3_data_store import S3DataStore
 from src.data_store.local_data_store import LocalDataStore
 from src.scoring.hpf_scoring import HPFScoring
+from src.utils import convert_string2bool_env
 from src.config import (AWS_S3_ACCESS_KEY_ID,
                         AWS_S3_SECRET_ACCESS_KEY,
                         AWS_S3_BUCKET_NAME,
@@ -40,7 +41,7 @@ global s3_object
 
 
 if HPF_SCORING_REGION != "":  # pragma: no cover
-    if USE_CLOUD_SERVICES:
+    if convert_string2bool_env(USE_CLOUD_SERVICES):
         data_object = S3DataStore(src_bucket_name=AWS_S3_BUCKET_NAME,
                                   access_key=AWS_S3_ACCESS_KEY_ID,
                                   secret_key=AWS_S3_SECRET_ACCESS_KEY)
