@@ -22,8 +22,10 @@ class TestLocalDataStoreMethods(unittest.TestCase):
 
     def test_list_files(self):
         """Test list files fucntion."""
-        file_lists = ['maven/scoring/manifest_id_dict.json',
-                      'maven/scoring/package_id_dict.json']
+        file_lists = ['maven/scoring/feedback_id_dict.json',
+                      'maven/scoring/manifest_id_dict.json',
+                      'maven/scoring/package_id_dict.json',
+                      ]
         file_output = self.local_obj.list_files()
         self.assertListEqual(file_lists, file_output)
 
@@ -48,11 +50,13 @@ class TestLocalDataStoreMethods(unittest.TestCase):
     def test_read_all_json_files(self):
         """Test reading all json files."""
         data_content = self.local_obj.read_all_json_files()
-        assert len(data_content) == 2
+        assert len(data_content) == 3
         file_list = [x[0] for x in data_content]
         self.assertListEqual(file_list,
-                             ['maven/scoring/manifest_id_dict.json',
-                              'maven/scoring/package_id_dict.json'])
+                             ['maven/scoring/feedback_id_dict.json',
+                              'maven/scoring/manifest_id_dict.json',
+                              'maven/scoring/package_id_dict.json'
+                              ])
 
     def test_write_remove_json_file(self):
         """Test writing and removing a json."""

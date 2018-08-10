@@ -32,7 +32,7 @@ from src.config import (UNKNOWN_PACKAGES_THRESHOLD,
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 
-if current_app:
+if current_app:  # pragma: no cover
     _logger = current_app.logger
 else:
     _logger = logging.getLogger(__file__)
@@ -63,7 +63,7 @@ class HPFScoring:
         self.theta_dummy = Poisson(np.array([self.epsilon * Gamma(tf.constant(
             a), self.epsilon).prob(tf.constant(K, dtype=tf.float32)).
             eval(session=tf.Session())] * K, dtype=float))
-        if isinstance(datastore, S3DataStore):
+        if isinstance(datastore, S3DataStore):  # pragma: no-cover
             self.load_s3()
         else:
             self.load_local()
@@ -94,7 +94,7 @@ class HPFScoring:
                 HPFScoring._getsizeof(self.beta))
         return details
 
-    def load_s3(self):
+    def load_s3(self):  # pragma: no cover
         """Load the model data from AWS S3."""
         theta_matrix_filename = os.path.join(
             HPF_SCORING_REGION, HPF_output_user_matrix)
@@ -112,7 +112,7 @@ class HPFScoring:
         self.beta = sparse_matrix.toarray()
         del(sparse_matrix)
         os.remove("/tmp/item_matrix.npz")
-        if self.USE_FEEDBACK:  # pragma: no cover
+        if self.USE_FEEDBACK:
             alpha_matrix_filename = os.path.join(
                 HPF_SCORING_REGION, HPF_output_feedback_matrix)
             self.datastore.download_file(
@@ -135,7 +135,7 @@ class HPFScoring:
         sparse_matrix = sparse.load_npz(beta_matrix_filename)
         self.beta = sparse_matrix.toarray()
         del(sparse_matrix)
-        if self.USE_FEEDBACK:  # pragma: no cover
+        if self.USE_FEEDBACK:
             alpha_matrix_filename = os.path.join(
                 self.datastore.src_dir,
                 HPF_SCORING_REGION, HPF_output_feedback_matrix)
@@ -157,7 +157,7 @@ class HPFScoring:
             manifest_id_dict_filename)
         self.manifest_id_dict = {n: set(x)
                                  for n, x in self.manifest_id_dict.items()}
-        if self.USE_FEEDBACK:  # pragma: no cover
+        if self.USE_FEEDBACK:
             feedback_id_dict_filename = os.path.join(
                 HPF_SCORING_REGION, HPF_output_feedback_id_dict)
             self.feedback_id_dict = self.datastore.read_json_file(
@@ -217,7 +217,7 @@ class HPFScoring:
             "input_id_set {} and manifest_id {}".format(input_id_set, manifest_id))
         return closest_manifest_id
 
-    def match_feedback_manifest(self, input_id_set):  # pragma: no cover
+    def match_feedback_manifest(self, input_id_set):
         """Find a feedback manifest that matches user's input package list and return its index.
 
         :param input_id_set: A set containing package ids of user's input package list.
@@ -249,7 +249,11 @@ class HPFScoring:
             with tf.Session(graph=graph_new) as sess_new:
                 result = sess_new.run(result)
         normalised_result = self.normalize_result(result, input_id_set)
-        return self.filter_recommendation(normalised_result, input_id_set)
+        if self.USE_FEEDBACK:
+            alpha_id = int(self.match_feedback_manifest(input_id_set))
+            return self.filter_recommendation(normalised_result,
+                                              alpha_id=alpha_id)
+        return self.filter_recommendation(normalised_result)
 
     def normalize_result(self, result, input_id_set, array_len=None):
         """Normalise the probability score of the resulting recommendation.
@@ -266,7 +270,7 @@ class HPFScoring:
                                       for i in range(array_len)])
         return normalised_result
 
-    def filter_recommendation(self, result, input_id_set, max_count=MAX_COMPANION_REC_COUNT):
+    def filter_recommendation(self, result, alpha_id=-1, max_count=MAX_COMPANION_REC_COUNT):
         """Filter companion recommendations based on sorted threshold score.
 
         :param result: The unfiltered companion recommendation result.
@@ -278,12 +282,10 @@ class HPFScoring:
         """
         highest_indices = set(result.argsort()[-max_count:len(result)])
         companion_recommendation = []
-        if self.USE_FEEDBACK:  # pragma: no cover
-            alpha_id = int(self.match_feedback_manifest(input_id_set))
-            if alpha_id != -1:
-                alpha_set = set(
-                    np.where(self.alpha[alpha_id] >= feedback_threshold)[0])
-                highest_indices = highest_indices.intersection(alpha_set)
+        if self.USE_FEEDBACK and alpha_id != -1:
+            alpha_set = set(
+                np.where(self.alpha[alpha_id] >= feedback_threshold)[0])
+            highest_indices = highest_indices.intersection(alpha_set)
 
         for package_id in highest_indices:
             recommendation = {

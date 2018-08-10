@@ -13,6 +13,7 @@ class TestFlaskMethods(unittest.TestCase):
         """Create a api client."""
         rest_api.app.testing = True
         self.client = rest_api.app.test_client()
+        assert len(rest_api.list_routes()) == 6
 
     def test_health_checks(self):
         """Test the liveness and readiness probes."""
