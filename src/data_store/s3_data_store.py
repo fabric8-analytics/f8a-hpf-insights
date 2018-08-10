@@ -34,7 +34,7 @@ class S3DataStore(AbstractDataStore):  # pragma: no cover
 
     def read_json_file(self, filename):
         """Read JSON file from the S3 bucket."""
-        return json.loads(self.read_generic_file(filename), object_hook=OrderDict)
+        return json.loads(self.read_generic_file(filename), object_hook=OrderedDict)
 
     def read_generic_file(self, filename):
         """Read a file from the S3 bucket."""
