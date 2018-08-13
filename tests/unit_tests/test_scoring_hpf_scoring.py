@@ -63,15 +63,16 @@ class TestHPFScoringMethods(unittest.TestCase):
 
     def test_folding_in(self):
         """Test 2 flows of folding_in() with dummy input set."""
-        input_id_set = {1}
+        input_id_set = {64}
         final_result = self.hpf_obj.folding_in(input_id_set)
         package_set = set([comp['package_name'] for comp in final_result])
-        expected_package_set = set(['org.springframework:spring-core',
-                                    'org.springframework:spring-context',
-                                    'org.springframework:spring-beans',
-                                    'commons-logging:commons-logging',
-                                    'commons-codec:commons-codec'])
-        assert(all(comp['cooccurrence_probability'] < 100.0
+        expected_package_set = set(['org.slf4j:slf4j-api',
+                                    'commons-lang:commons-lang',
+                                    'org.slf4j:slf4j-simple',
+                                    'com.sun.jersey:jersey-grizzly2',
+                                    'org.apache.commons:commons-lang3'
+                                    ])
+        assert(all(comp['cooccurrence_probability'] < 50.0
                    for comp in final_result))
         assert package_set == expected_package_set
         input_id_set = {115, 131, 132, 133, 134, 136,
@@ -107,8 +108,8 @@ class TestHPFScoringMethods(unittest.TestCase):
         predict_result = self.hpf_obj.predict(input_stack)
         assert predict_result[0] == []
         assert len(predict_result[1]) == 1
-        assert len(predict_result[2]) == 1 and \
-            predict_result[2][0] == "io.vertx:sarah-test-package"
+        assert len(predict_result[2]) == 1 \
+            and predict_result[2][0] == "io.vertx:sarah-test-package"
 
     def test_model_details(self):
         """Test the basic model details function."""
