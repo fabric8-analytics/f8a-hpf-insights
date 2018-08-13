@@ -3,7 +3,7 @@
 import numpy as np
 from scipy import sparse
 import os
-from sys import getsizeof
+from sys import getsizeof, maxsize
 from edward.models import Poisson
 from edward.models import Gamma
 import tensorflow as tf
@@ -171,14 +171,19 @@ class HPFScoring:
         :param input_id_set: A set containing package ids of user's input package list.
         :return manifest_id: The index of the matched manifest.
         """
+        closest_manifest_id = -1
+        max_diff = maxsize
         for manifest_id, dependency_set in self.manifest_id_dict.items():
+            curr_diff = len(dependency_set.difference(input_id_set))
             if dependency_set == input_id_set:
+                closest_manifest_id = manifest_id
                 break
-        else:
-            manifest_id = -1
+            elif input_id_set.issubset(dependency_set) and curr_diff < max_diff:
+                closest_manifest_id = manifest_id
+                max_diff = curr_diff
         _logger.debug(
             "input_id_set {} and manifest_id {}".format(input_id_set, manifest_id))
-        return manifest_id
+        return closest_manifest_id
 
     def folding_in(self, input_id_set):
         """Folding in logic for prediction.
