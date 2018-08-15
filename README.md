@@ -6,7 +6,7 @@ HPF Matrix Factorizations for companion recommendation.
 *HPF- Hierarchical Poisson Factorization*
 
 ## Supported ecosystems:
-* Maven
+* Maven - Last trained at: 2018-08-08 11:30 IST(UTC +5:30)
 
 ## Build upon:
 * https://github.com/arindamsarkar93/hcpf
