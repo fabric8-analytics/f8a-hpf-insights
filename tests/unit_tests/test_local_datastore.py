@@ -43,7 +43,8 @@ class TestLocalDataStoreMethods(unittest.TestCase):
         """Test reading a json file."""
         package_id_dict_filename = os.path.join(
             HPF_SCORING_REGION, HPF_output_package_id_dict)
-        data = self.local_obj.read_json_file(package_id_dict_filename)
+        data = self.local_obj.read_json_file(package_id_dict_filename)[
+            0].get("package_list", {})
         assert len(data) == 12405
         assert data["org.sakaiproject.kernel:sakai-kernel-util"] == 0
 

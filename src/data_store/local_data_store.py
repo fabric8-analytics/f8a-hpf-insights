@@ -38,7 +38,7 @@ class LocalDataStore(AbstractDataStore):
     def read_json_file(self, filename):
         """Read JSON file from the data_input source."""
         with open(os.path.join(self.src_dir, filename), "r") as json_fileobj:
-            return json.load(json_fileobj, object_hook=OrderedDict)
+            return json.load(json_fileobj, object_pairs_hook=OrderedDict)
 
     def read_all_json_files(self):
         """Read all the files from the data_input source."""

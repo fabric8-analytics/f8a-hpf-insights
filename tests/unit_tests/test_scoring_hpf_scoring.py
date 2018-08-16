@@ -128,12 +128,12 @@ class TestHPFScoringMethods(unittest.TestCase):
         assert(all(comp["cooccurrence_probability"] < 100.0
                    for comp in predict_result[0]))
         package_set = set([comp['package_name'] for comp in predict_result[0]])
-        expected_package_set = {'org.springframework:spring-beans',
-                                'commons-io:commons-io',
-                                'org.apache.httpcomponents:httpclient',
-                                'org.codehaus.jackson:jackson-mapper-asl',
-                                'org.springframework:spring-webmvc'
-                                }
+        expected_package_set = {'org.hibernate:hibernate-validator',
+                                'org.jadira.usertype:usertype.core',
+                                'javax.mail:mail',
+                                'org.hibernate:hibernate-core',
+                                'org.springframework:spring-orm'}
+
         assert package_set == expected_package_set
         self.assertListEqual(predict_result[2], [])
         assert len(predict_result[1]) == 2

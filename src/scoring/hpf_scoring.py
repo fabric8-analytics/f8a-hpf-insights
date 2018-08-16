@@ -4,6 +4,7 @@ import numpy as np
 from scipy import sparse
 import os
 from sys import getsizeof, maxsize
+from collections import OrderedDict
 from edward.models import Poisson
 from edward.models import Gamma
 import tensorflow as tf
@@ -48,13 +49,13 @@ class HPFScoring:
         """Set the variables and load model data."""
         self.datastore = datastore
         self.USE_FEEDBACK = convert_string2bool_env(USE_FEEDBACK)
-        self.package_id_dict = dict()
-        self.id_package_dict = dict()
+        self.package_id_dict = OrderedDict()
+        self.id_package_dict = OrderedDict()
         self.beta = None
         self.theta = None
         self.alpha = None
-        self.manifest_id_dict = dict()
-        self.feedback_id_dict = dict()
+        self.manifest_id_dict = OrderedDict()
+        self.feedback_id_dict = OrderedDict()
         self.manifests = 0
         self.packages = 0
         self.epsilon = Gamma(tf.constant(
@@ -150,20 +151,23 @@ class HPFScoring:
             HPF_SCORING_REGION, HPF_output_package_id_dict)
         self.package_id_dict = self.datastore.read_json_file(
             package_id_dict_filename)
-        self.id_package_dict = {x: n for n, x in self.package_id_dict.items()}
+        self.id_package_dict = OrderedDict({x: n for n, x in self.package_id_dict[
+            0].get("package_list", {}).items()})
+        self.package_id_dict = OrderedDict(
+            self.package_id_dict[0].get("package_list", {}))
         manifest_id_dict_filename = os.path.join(
             HPF_SCORING_REGION, HPF_output_manifest_id_dict)
         self.manifest_id_dict = self.datastore.read_json_file(
             manifest_id_dict_filename)
-        self.manifest_id_dict = {n: set(x)
-                                 for n, x in self.manifest_id_dict.items()}
+        self.manifest_id_dict = OrderedDict({n: set(x) for n, x in self.manifest_id_dict[
+            0].get("manifest_list", {}).items()})
         if self.USE_FEEDBACK:
             feedback_id_dict_filename = os.path.join(
                 HPF_SCORING_REGION, HPF_output_feedback_id_dict)
             self.feedback_id_dict = self.datastore.read_json_file(
                 feedback_id_dict_filename)
-            self.feedback_id_dict = {
-                n: set(x) for n, x in self.feedback_id_dict.items()}
+            self.feedback_id_dict = OrderedDict({n: set(x) for n, x in self.feedback_id_dict[
+                0].get("feedback_list", {}).items()})
 
     def predict(self, input_stack):
         """Prediction function.
@@ -214,7 +218,7 @@ class HPFScoring:
                 closest_manifest_id = manifest_id
                 max_diff = curr_diff
         _logger.debug(
-            "input_id_set {} and manifest_id {}".format(input_id_set, manifest_id))
+            "input_id_set {} and manifest_id {}".format(input_id_set, closest_manifest_id))
         return closest_manifest_id
 
     def match_feedback_manifest(self, input_id_set):
