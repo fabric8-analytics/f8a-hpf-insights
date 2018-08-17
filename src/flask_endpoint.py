@@ -53,7 +53,7 @@ else:
     app.scoring_status = False
 
 
-def list_routes():  # pragma: no cover
+def list_routes():
     """Return a list of routes for this app."""
     return [str(rule) for rule in app.url_map.iter_rules()]
 

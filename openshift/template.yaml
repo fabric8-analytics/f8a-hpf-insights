@@ -42,6 +42,9 @@ objects:
         value: "${UNKNOWN_PACKAGES_THRESHOLD}"
       - name: USE_CLOUD_SERVICES
         value: "${{USE_CLOUD_SERVICES}}"
+      - name: USE_FEEDBACK
+        value: "${{USE_FEEDBACK}}"
+
       - name: AWS_S3_ACCESS_KEY_ID
         valueFrom:
           secretKeyRef:
@@ -170,3 +173,9 @@ parameters:
   required: true
   name: USE_CLOUD_SERVICES
   value: "True"
+
+- description: Use feedback while scoring
+  displayName: Use feedback while scoring
+  required: true
+  name: USE_FEEDBACK
+  value: "False"
