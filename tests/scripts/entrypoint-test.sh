@@ -18,4 +18,4 @@ echo "*****************************************"
 echo "*** Unit tests ***"
 echo "*****************************************"
 
-pytest --cov=/src/ --cov-report term-missing -vv /tests/unit_tests/
+PYTHONHASHSEED=2 pytest --cov=/src/ --cov-report term-missing -vv /tests/unit_tests/
