@@ -185,6 +185,8 @@ class HPFScoring:
         missing_packages = set()
         package_topic_dict = {}
         companion_recommendation = []
+        if not input_stack:
+            return companion_recommendation, package_topic_dict, list(missing_packages)
         for package_name in input_stack:
             package_id = self.package_id_dict.get(package_name)
             if package_id:

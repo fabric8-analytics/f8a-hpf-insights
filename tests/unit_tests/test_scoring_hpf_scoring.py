@@ -158,6 +158,12 @@ class TestHPFScoringMethods(unittest.TestCase):
         assert package_set == expected_package_set
         self.assertListEqual(predict_result[2], [])
         assert len(predict_result[1]) == 4
+        input_stack = []
+        predict_result1 = self.hpf_obj.predict(input_stack)
+        predict_result2 = self.hpf_obj_feedback.predict(input_stack)
+        assert not predict_result1[0] and not predict_result2[0]
+        assert not predict_result1[1] and not predict_result2[1]
+        assert not predict_result1[2] and not predict_result2[2]
 
     def test_model_details(self):
         """Test the basic model details function."""
