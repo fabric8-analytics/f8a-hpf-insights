@@ -93,12 +93,13 @@ def hpf_scoring():
                     "package_to_topic_dict": package_to_topic_dict,
                 }
             response_json.append(output_json)
+        return flask.jsonify(response_json)
     else:  # pragma: no cover
         current_app.logger.error(
             'No scoring region provided. HPF_SCORING_REGION is {}'.format(HPF_SCORING_REGION))
         response_json.append(
             {"Error": "No scoring region provided"})
-    return flask.jsonify(response_json)
+        return flask.jsonify(response_json), 501
 
 
 def hpf_model_details():
@@ -106,7 +107,7 @@ def hpf_model_details():
     if app.scoring_status:
         return flask.jsonify({"Model Details": app.scoring_object.model_details()})
     else:  # pragma: no cover
-        return flask.jsonify({"Error": "No scoring region provided"})
+        return flask.jsonify({"Error": "No scoring region provided"}), 501
 
 
 app.add_api(SWAGGER_YAML_PATH)
