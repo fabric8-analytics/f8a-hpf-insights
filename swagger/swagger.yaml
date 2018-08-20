@@ -41,6 +41,10 @@ paths:
       responses:
         200:
           description: The size of input data and output matrices.
+        501:
+          schema:
+            $ref: '#/definitions/FailureResponse'
+          description: The ecosystem for loading model is not correct.
   /api/v1/companion_recommendation:
     post:
       tags: [Recommendation API]
@@ -54,10 +58,14 @@ paths:
           schema:
             $ref: '#/definitions/UserStack'
       responses:
-        '200':
+        200:
           schema:
             $ref: '#/definitions/SuccessResponse'
           description: Companion recommendations along with their associated probabilities
+        501:
+          schema:
+            $ref: '#/definitions/FailureResponse'
+          description: The ecosystem for loading model is not correct.
 definitions:
   UserStack:
     title: Request format for companion_recommendation endpoint
@@ -116,3 +124,4 @@ definitions:
       properties:
         Error:
           type: string
+          example: No scoring region provided
