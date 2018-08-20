@@ -11,9 +11,9 @@ class TestFlaskMethods(unittest.TestCase):
 
     def setUp(self):
         """Create a api client."""
-        rest_api.app.testing = True
-        self.client = rest_api.app.test_client()
-        assert len(rest_api.list_routes()) == 6
+        rest_api.app.app.testing = True
+        self.client = rest_api.app.app.test_client()
+        assert self.client is not None
 
     def test_health_checks(self):
         """Test the liveness and readiness probes."""

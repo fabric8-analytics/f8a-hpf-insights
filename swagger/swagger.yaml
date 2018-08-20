@@ -3,13 +3,21 @@ info:
   title: API for Fabric8 Analytics HPF Insights
   description: Spec for the REST API of HPF insights model.
   version: "0.1"
-basePath: "/api/v1/"
+basePath: "/"
 consumes:
   - application/json
 produces:
   - application/json
 paths:
-  /liveness:
+  /:
+    get:
+      tags: [Service settings]
+      operationId: src.flask_endpoint.heart_beat
+      summary: The base path
+      responses:
+        200:
+          description: The base path
+  /api/v1/liveness:
     get:
       tags: [Service settings]
       operationId: src.flask_endpoint.liveness
@@ -17,7 +25,7 @@ paths:
       responses:
         200:
           description: Service is alive
-  /readiness:
+  /api/v1/readiness:
     get:
       tags: [Service settings]
       operationId: src.flask_endpoint.readiness
@@ -25,7 +33,15 @@ paths:
       responses:
         200:
           description: Service is ready
-  /companion_recommendation:
+  /api/v1/model_details:
+    get:
+      tags: [Recommendation API]
+      operationId: src.flask_endpoint.hpf_model_details
+      summary: Get the details about deployed model
+      responses:
+        200:
+          description: The size of input data and output matrices.
+  /api/v1/companion_recommendation:
     post:
       tags: [Recommendation API]
       operationId: src.flask_endpoint.hpf_scoring
@@ -42,10 +58,6 @@ paths:
           schema:
             $ref: '#/definitions/SuccessResponse'
           description: Companion recommendations along with their associated probabilities
-        '202':
-          schema:
-            $ref: '#/definitions/FailureResponse'
-          description: No ecosystem provided to load the flask app
 definitions:
   UserStack:
     title: Request format for companion_recommendation endpoint
