@@ -55,30 +55,21 @@ else:
     app.scoring_status = False
 
 
-def list_routes():
-    """Return a list of routes for this app."""
-    return [str(rule) for rule in app.app.url_map.iter_rules()]
-
-
-@app.route('/')
 def heart_beat():
     """Handle the / REST API call."""
-    return flask.jsonify({"status": "ok", "routes": list_routes()})
+    return flask.jsonify({"status": "ok"})
 
 
-@app.route('/api/v1/liveness', methods=['GET'])
 def liveness():
     """Define the linveness probe."""
     return flask.jsonify({"status": "alive"})
 
 
-@app.route('/api/v1/readiness', methods=['GET'])
 def readiness():
     """Define the readiness probe."""
     return flask.jsonify({"status": "ready"})
 
 
-@app.route('/api/v1/companion_recommendation', methods=['POST'])
 def hpf_scoring():
     """Endpoint to serve recommendations."""
     response_json = []
@@ -110,7 +101,6 @@ def hpf_scoring():
     return flask.jsonify(response_json)
 
 
-@app.route('/api/v1/model_details', methods=['GET'])
 def hpf_model_details():
     """Endpoint to return model size details."""
     if app.scoring_status:
