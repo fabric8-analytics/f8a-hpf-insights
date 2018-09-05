@@ -3,7 +3,6 @@
 from src.scoring.hpf_scoring import HPFScoring
 from src.data_store.local_data_store import LocalDataStore
 from edward.models import Poisson
-import tensorflow as tf
 import numpy as np
 import unittest
 

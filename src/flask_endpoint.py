@@ -4,7 +4,7 @@ import os
 import connexion
 import flask
 import logging
-from flask import Flask, request, current_app
+from flask import request, current_app
 from flask_cors import CORS
 from src.data_store.s3_data_store import S3DataStore
 from src.data_store.local_data_store import LocalDataStore

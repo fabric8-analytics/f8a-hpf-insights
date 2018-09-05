@@ -55,10 +55,10 @@ class LocalDataStore(AbstractDataStore):
             json.dump(contents, outfile)
         return None
 
-    def upload_file(self, src, target):
+    def upload_file(self, _src, _target):
         """Upload file into data store."""
         raise NotImplementedError()
 
-    def download_file(self, src, target):
+    def download_file(self, _src, _target):
         """Download file from data store."""
         raise NotImplementedError()
