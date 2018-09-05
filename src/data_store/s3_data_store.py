@@ -45,7 +45,31 @@ class S3DataStore(AbstractDataStore):  # pragma: no cover
 
     def list_files(self, prefix=None, max_count=None):
         """List all the files in the S3 bucket."""
-        raise NotImplementedError()
+        list_filenames = []
+        if prefix is None:
+            objects = self.bucket.objects.all()
+            if max_count is None:
+                list_filenames = [x.key for x in objects]
+            else:
+                counter = 0
+                for obj in objects:
+                    list_filenames.append(obj.key)
+                    counter += 1
+                    if counter == max_count:
+                        break
+        else:
+            objects = self.bucket.objects.filter(Prefix=prefix)
+            if max_count is None:
+                list_filenames = [x.key for x in objects]
+            else:
+                counter = 0
+                for obj in objects:
+                    list_filenames.append(obj.key)
+                    counter += 1
+                    if counter == max_count:
+                        break
+
+        return list_filenames
 
     def read_all_json_files(self):
         """Read all the files from the S3 bucket."""
@@ -74,6 +98,7 @@ class S3DataStore(AbstractDataStore):  # pragma: no cover
         :param bucket: name of s3 bucket
         :return: dict of metadata for an object
         """
+        assert ecosystem is not None
         raise NotImplementedError()
 
     def list_folders(self, prefix=None):
