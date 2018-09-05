@@ -8,12 +8,9 @@ from collections import OrderedDict
 from edward.models import Poisson
 from edward.models import Gamma
 import tensorflow as tf
-import os
 from flask import current_app
 import logging
-from collections import defaultdict
 from src.data_store.s3_data_store import S3DataStore
-from src.data_store.local_data_store import LocalDataStore
 from src.utils import convert_string2bool_env
 from src.config import (UNKNOWN_PACKAGES_THRESHOLD,
                         MAX_COMPANION_REC_COUNT,
@@ -24,8 +21,7 @@ from src.config import (UNKNOWN_PACKAGES_THRESHOLD,
                         HPF_output_user_matrix,
                         HPF_output_item_matrix,
                         HPF_output_feedback_matrix,
-                        a, a_c, c, c_c,
-                        b_c, d_c, K,
+                        a, a_c, b_c, K,
                         USE_FEEDBACK,
                         feedback_threshold)
 

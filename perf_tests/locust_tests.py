@@ -1,7 +1,7 @@
 """Load Testing Companion Recommendation."""
 
 import json
-from locust import HttpLocust, TaskSet, events, task, web
+from locust import HttpLocust, TaskSet, task
 from collections import Counter
 import random
 
