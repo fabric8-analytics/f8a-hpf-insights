@@ -99,6 +99,7 @@ class HPFInsightsBehaviour(TaskSet):
         response = self.client.post("/api/v1/companion_recommendation",
                                     data=json.dumps(get_packages()),
                                     headers={"Content-type": "application/json"})
+        assert response
 
 
 class HPFInsightsLocust(HttpLocust):
