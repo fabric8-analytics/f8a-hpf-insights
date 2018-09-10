@@ -22,14 +22,15 @@ class LocalDataStore(AbstractDataStore):
     def list_files(self, prefix=None, max_count=None):
         """List all the json files in the source directory."""
         list_filenames = []
+        pattern = ''.join([(prefix or ''), "*.json"])
         for root, dirs, files in os.walk(self.src_dir):
             for basename in files:
-                if fnmatch.fnmatch(basename, "*.json"):
-                    filename = os.path.join(root, basename)
-                    filename = filename[len(self.src_dir) + 1:]
+                if fnmatch.fnmatch(basename, pattern):
+                    filename = os.path.relpath(
+                            os.path.join(root, basename), self.src_dir)
                     list_filenames.append(filename)
         list_filenames.sort()
-        return list_filenames
+        return list_filenames[:max_count]
 
     def remove_json_file(self, filename):
         """Remove JSON file from the data_input source file path."""
