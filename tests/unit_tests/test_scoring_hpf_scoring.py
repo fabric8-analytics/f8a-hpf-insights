@@ -36,15 +36,18 @@ class TestHPFScoringMethods(unittest.TestCase):
         assert int(id_) == -1
 
     def test_recommend_known_user(self):
+        """Test logic where we recommend for a known user(exists in training set)."""
         recommendations = self.hpf_obj.recommend_known_user(
             0, [0])
         self.assertTrue(recommendations)
 
     def test_recommend_new_user(self):
+        """Test the fold-in logic where we calculate factors for new user."""
         recommendation = self.hpf_obj.recommend_new_user([0], k=13)
         self.assertTrue(recommendation)
 
     def test_predict_missing(self):
+        """Test no prediction in case of higher than threshold missing package ratio."""
         with app.app.app_context():
             recommendation = self.hpf_obj.predict(['missing-pkg'])
             self.assertFalse(recommendation[0])
