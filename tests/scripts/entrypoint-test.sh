@@ -18,4 +18,5 @@ echo "*****************************************"
 echo "*** Unit tests ***"
 echo "*****************************************"
 
+mkdir /tmp/hpf # Need to create this dir as shutil.copyfile does not create parents
 PYTHONHASHSEED=2 pytest --cov=/src/ --cov-report term-missing -vv /tests/unit_tests/

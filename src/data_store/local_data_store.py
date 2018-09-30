@@ -4,6 +4,7 @@ import fnmatch
 import json
 import os
 from collections import OrderedDict
+from shutil import copyfile
 
 from src.data_store.abstract_data_store import AbstractDataStore
 
@@ -17,7 +18,7 @@ class LocalDataStore(AbstractDataStore):
 
     def get_name(self):
         """Get the name that identifies the storage."""
-        return "Local filesytem dir: " + self.src_dir
+        return "Local filesystem dir: " + self.src_dir
 
     def list_files(self, prefix=None, max_count=None):
         """List all the json files in the source directory."""
@@ -62,4 +63,4 @@ class LocalDataStore(AbstractDataStore):
 
     def download_file(self, _src, _target):
         """Download file from data store."""
-        raise NotImplementedError()
+        copyfile(os.path.join(self.src_dir, _src), _target)

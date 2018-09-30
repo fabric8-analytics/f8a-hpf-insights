@@ -26,14 +26,21 @@ HPF_output_item_matrix = "scoring/item_matrix.npz"
 HPF_output_feedback_matrix = "scoring/feedback_matrix.npz"
 HPF_output_feedback_id_dict = "scoring/feedback_id_dict.json"
 
+# Other objects, required for fold-in
+HPF_LAM_SHP_PATH = "scoring/lambda_shape.npz"
+HPF_LAM_RTE_PATH = "scoring/lambda_rate.npz"
+
 # Model HyperParameters
-a = 0.5
-a_c = 0.5
-c = 0.5
-c_c = 0.5
-K = 13
-b_c = 0.99
-d_c = 0.99
+a = 0.3
+a_c = 0.3
+c = 0.3
+c_c = 0.3
+K = 30
+b_c = 1
+d_c = 1
+iterations = 50
+iter_score = 10
+stop_thr = 1e-6
 
 # Feedback constants
 feedback_threshold = 0.5
