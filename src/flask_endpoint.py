@@ -17,6 +17,11 @@ from src.config import (AWS_S3_ACCESS_KEY_ID,
                         USE_CLOUD_SERVICES,
                         SWAGGER_YAML_PATH)
 
+# Turn off the annoying boto logs unless some error occurs
+logging.getLogger('botocore').setLevel(logging.ERROR)
+logging.getLogger('s3transfer').setLevel(logging.ERROR)
+logging.getLogger('boto3').setLevel(logging.ERROR)
+
 
 def setup_logging(flask_app):  # pragma: no cover
     """Perform the setup of logging (file, log level) for this application."""
@@ -41,18 +46,18 @@ global scoring_status
 global scoring_object
 global s3_object
 
-
-if HPF_SCORING_REGION != "":  # pragma: no cover
+if HPF_SCORING_REGION != "":
     if convert_string2bool_env(USE_CLOUD_SERVICES):
-        data_object = S3DataStore(src_bucket_name=AWS_S3_BUCKET_NAME,
-                                  access_key=AWS_S3_ACCESS_KEY_ID,
-                                  secret_key=AWS_S3_SECRET_ACCESS_KEY)
+        s3_object = S3DataStore(src_bucket_name=AWS_S3_BUCKET_NAME,
+                                access_key=AWS_S3_ACCESS_KEY_ID,
+                                secret_key=AWS_S3_SECRET_ACCESS_KEY)
+        app.scoring_object = HPFScoring(datastore=s3_object)
     else:
-        data_object = LocalDataStore("tests/test_data")
-    app.scoring_object = HPFScoring(datastore=data_object)
+        app.scoring_object = HPFScoring(LocalDataStore("tests/test_data"))
     app.scoring_status = True
 else:
     app.scoring_status = False
+    current_app.logger.warning("Have not loaded a model for scoring!")
 
 
 def heart_beat():
@@ -67,6 +72,8 @@ def liveness():
 
 def readiness():
     """Define the readiness probe."""
+    if not app.scoring_status:
+        return flask.jsonify({"error": "Could not load model from S3"}), 500
     return flask.jsonify({"status": "ready"})
 
 
@@ -111,5 +118,6 @@ def hpf_model_details():
 
 
 app.add_api(SWAGGER_YAML_PATH)
+
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True, port=6006)

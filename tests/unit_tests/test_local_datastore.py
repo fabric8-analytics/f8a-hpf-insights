@@ -18,7 +18,7 @@ class TestLocalDataStoreMethods(unittest.TestCase):
     def test_get_name(self):
         """Test local datastore object and name."""
         assert self.local_obj is not None
-        assert self.local_obj.get_name() == "Local filesytem dir: tests/test_data"
+        assert self.local_obj.get_name() == "Local filesystem dir: tests/test_data"
 
     def test_list_files(self):
         """Test list files fucntion."""
@@ -28,11 +28,6 @@ class TestLocalDataStoreMethods(unittest.TestCase):
                       ]
         file_output = self.local_obj.list_files()
         self.assertListEqual(file_lists, file_output)
-
-    def test_download_file(self):
-        """Raise Not implemented error."""
-        self.assertRaises(
-            NotImplementedError, self.local_obj.download_file, "src", "target")
 
     def test_upload_file(self):
         """Raise Not implemented error."""
