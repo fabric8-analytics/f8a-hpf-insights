@@ -17,7 +17,7 @@ from scipy.special import psi
 from src.config import (HPF_LAM_RTE_PATH, HPF_LAM_SHP_PATH, HPF_SCORING_REGION,
                         HPF_output_feedback_id_dict, HPF_output_feedback_matrix,
                         HPF_output_item_matrix, HPF_output_manifest_id_dict,
-                        HPF_output_package_id_dict, HPF_output_user_matrix, K,
+                        HPF_output_package_id_dict, HPF_output_user_matrix,
                         MAX_COMPANION_REC_COUNT, UNKNOWN_PACKAGES_THRESHOLD, USE_FEEDBACK, a, a_c,
                         b_c, feedback_threshold, iter_score, stop_thr)
 import src.config as config
@@ -205,16 +205,14 @@ class HPFScoring:
         Calculates user factors for a new user and adds the user to the user matrix to make
         prediction.
         """
-        if k != config.K:
-            K = k
         # initializing parameters
         _logger.info("Could not find a match, calculating factors to recommend.")
-        k_shp = a_c + K * a
+        k_shp = a_c + k * a
         # TODO: t_shp, Why is it not required here?
         nY = len(input_user_stack)
         Y = np.ones(shape=(nY,))
         seed = np.random.seed(int(time.time()))
-        theta = Gamma(a, 1 / b_c).sample(sample_shape=(K,), seed=seed).eval(session=tf.Session())
+        theta = Gamma(a, 1 / b_c).sample(sample_shape=(k,), seed=seed).eval(session=tf.Session())
         k_rte = b_c + np.sum(theta)
         gamma_rte = \
             Gamma(a_c, b_c / a_c).sample(
@@ -222,10 +220,10 @@ class HPFScoring:
         gamma_shp = \
             gamma_rte * theta * \
             Uniform(low=.85, high=1.15).sample(
-                sample_shape=(K,), seed=seed).eval(session=tf.Session())
+                sample_shape=(k,), seed=seed).eval(session=tf.Session())
         np.nan_to_num(gamma_shp, copy=False)
         np.nan_to_num(gamma_rte, copy=False)
-        phi = np.empty((nY, K), dtype='float32')
+        phi = np.empty((nY, k), dtype='float32')
         add_k_rte = a_c / b_c
         theta_prev = theta.copy()
         # running the loop
@@ -235,15 +233,15 @@ class HPFScoring:
                 sumphi = 10e-6
                 maxval = - 10 ** 1
                 phi_st = i
-                for j in range(K):
+                for j in range(k):
                     phi[phi_st, j] = psi(gamma_shp[j]) - log(gamma_rte[j]) + psi(
                             self.lam_shp[iid, j]) - log(self.lam_rte[iid, j])
                     if phi[phi_st, j] > maxval:
                         maxval = phi[phi_st, j]
-                for j in range(K):
+                for j in range(k):
                     phi[phi_st, j] = exp(phi[phi_st, j] - maxval)
                     sumphi += phi[phi_st, j]
-                for j in range(K):
+                for j in range(k):
                     phi[phi_st, j] *= Y[i] / sumphi
             gamma_rte = (k_shp / k_rte + self.beta.sum(axis=0, keepdims=True)).reshape(-1)
             gamma_shp = a + phi.sum(axis=0)
