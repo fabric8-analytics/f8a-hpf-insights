@@ -18,7 +18,7 @@ from src.config import (HPF_LAM_RTE_PATH, HPF_LAM_SHP_PATH, HPF_SCORING_REGION,
                         HPF_output_feedback_id_dict, HPF_output_feedback_matrix,
                         HPF_output_item_matrix, HPF_output_manifest_id_dict,
                         HPF_output_package_id_dict, HPF_output_user_matrix,
-                        MAX_COMPANION_REC_COUNT, UNKNOWN_PACKAGES_THRESHOLD, USE_FEEDBACK, a, a_c,
+                        MAX_COMPANION_REC_COUNT, USE_FEEDBACK, a, a_c,
                         b_c, feedback_threshold, iter_score, stop_thr)
 import src.config as config
 
@@ -152,16 +152,16 @@ class HPFScoring:
             else:
                 missing_packages.add(package_name)
 
-        if len(missing_packages) / len(input_stack) <= UNKNOWN_PACKAGES_THRESHOLD:
-            manifest_match = self.match_manifest(input_id_set)
-            if manifest_match > 0:
-                companion_recommendation = self.recommend_known_user(manifest_match, input_id_set)
-            else:
-                companion_recommendation = self.recommend_new_user(list(input_id_set))
-        else:
+        if len(input_stack) - len(missing_packages) == 0 or \
+                len(missing_packages) > len(input_stack) - len(missing_packages):
             current_app.logger.info("Not recommending as stack has {} missing packages out "
                                     "of {}".format(len(missing_packages), len(input_stack)))
-            companion_recommendation = []
+            return [], {}, list(missing_packages)
+        manifest_match = self.match_manifest(input_id_set)
+        if manifest_match > 0:
+            companion_recommendation = self.recommend_known_user(manifest_match, input_id_set)
+        else:
+            companion_recommendation = self.recommend_new_user(list(input_id_set))
         return companion_recommendation, package_topic_dict, list(missing_packages)
 
     def match_feedback_manifest(self, input_id_set):
