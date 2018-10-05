@@ -19,7 +19,7 @@ from src.config import (HPF_LAM_RTE_PATH, HPF_LAM_SHP_PATH, HPF_SCORING_REGION,
                         HPF_output_item_matrix, HPF_output_manifest_id_dict,
                         HPF_output_package_id_dict, HPF_output_user_matrix,
                         MAX_COMPANION_REC_COUNT, USE_FEEDBACK, a, a_c,
-                        b_c, feedback_threshold, iter_score, stop_thr)
+                        b_c, feedback_threshold, iter_score, stop_thr, MIN_REC_CONFIDENCE)
 import src.config as config
 
 from src.utils import convert_string2bool_env
@@ -282,7 +282,7 @@ class HPFScoring:
                 "package_name": self.id_package_dict[package_id],
                 "topic_list": []  # We don't have topics for this ecosystem!!
             }
-            # At least one percent probability is required for recommendation to go through.
-            if recommendation['cooccurrence_probability'] > 0.01:
+            # At least thirty percent probability is required for recommendation to go through.
+            if recommendation['cooccurrence_probability'] > MIN_REC_CONFIDENCE:
                 companion_recomendations.append(recommendation)
         return companion_recomendations
