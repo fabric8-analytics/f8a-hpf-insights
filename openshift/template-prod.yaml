@@ -48,6 +48,8 @@ objects:
             value: "${MAX_COMPANION_REC_COUNT}"
           - name: UNKNOWN_PACKAGES_THRESHOLD
             value: "${UNKNOWN_PACKAGES_THRESHOLD}"
+          - name: MIN_REC_CONFIDENCE
+            value: "${MIN_REC_CONFIDENCE}"
           - name: USE_CLOUD_SERVICES
             value: "${{USE_CLOUD_SERVICES}}"
           - name: USE_FEEDBACK
@@ -113,25 +115,25 @@ parameters:
   displayName: CPU request
   required: true
   name: CPU_REQUEST
-  value: "1000m"
+  value: "100m"
 
 - description: CPU limit
   displayName: CPU limit
   required: true
   name: CPU_LIMIT
-  value: "1500m"
+  value: "700m"
 
 - description: Memory request
   displayName: Memory request
   required: true
   name: MEMORY_REQUEST
-  value: "1536Mi"
+  value: "200Mi"
 
 - description: Memory limit
   displayName: Memory limit
   required: true
   name: MEMORY_LIMIT
-  value: "1536Mi"
+  value: "700Mi"
 
 - description: Docker registry where the image is
   displayName: Docker registry
@@ -180,6 +182,12 @@ parameters:
   required: false
   name: MAX_COMPANION_REC_COUNT
   value: "5"
+
+- description: Minimum recommendation confidence score
+  displayName: Minimum recommendation confidence score
+  required: true
+  name: MIN_REC_CONFIDENCE
+  value: "0.30"
 
 - description: Restart policy
   displayName: Restart policy
