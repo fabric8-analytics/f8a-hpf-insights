@@ -177,7 +177,7 @@ class HPFScoring:
             manifest_id = -1
         _logger.debug(
                 "input_id_set {} and feedback_manifest_id {}".format(input_id_set, manifest_id))
-        return manifest_id
+        return int(manifest_id)
 
     def match_manifest(self, input_id_set):  # pragma: no cover
         """Find a manifest list that matches user's input package list and return its index.
