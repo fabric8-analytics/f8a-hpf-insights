@@ -175,7 +175,7 @@ class Feedback:
         """Generate the feedback matrix aka alpha matrix, and normalise it."""
         manifests = len(self.feedback_id_dict)
         packages = len(self.package_id_dict)
-        self.alpha_matrix = self.rating_matrix = np.zeros((manifests, packages))
+        self.alpha_matrix = self.rating_matrix = np.full((manifests, packages),feedback_threshold)
         for manifest_id in self.feedback_json_clean:
             min_user, max_user = self.normalization_dict[manifest_id]
             min_max = max_user - min_user
