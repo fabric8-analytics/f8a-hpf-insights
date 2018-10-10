@@ -15,6 +15,7 @@ logging.basicConfig()
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
+
 def trainingS3():
     """Call the preprocess module. with S3 as datastore."""
     t_start = time.time()
@@ -55,6 +56,4 @@ def trainingS3():
 
 
 if __name__ == '__main__':
-    import sys
-    print(sys.path)
     trainingS3()

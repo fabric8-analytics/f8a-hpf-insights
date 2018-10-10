@@ -1,18 +1,14 @@
 """Hyper parameter tuning and matrix parameter generation."""
+import logging
+import time
 
 import numpy as np
-import json
-from scipy import sparse
-import math
 import scipy.special as sp
+from scipy import sparse
 from scipy.misc import logsumexp
-from scipy.special import lambertw
-from src.config import (a, a_c, c, c_c,
-                        b_c, d_c, K,
-                        iterations)
+
+from src.config import (K, a, a_c, b_c, c, c_c, d_c, iterations)
 from src.utils import (non_zero_entries)
-import gc
-import logging
 
 logging.basicConfig()
 logger = logging.getLogger()
@@ -28,16 +24,17 @@ class HyperParameterTuning:
         self.loadlocal()
         self.manifests = self.rating_matrix.shape[0]
         self.packages = self.rating_matrix.shape[1]
-        self. kappa_shp = np.random.uniform(low=0.1, size=self.manifests)
-        self.kappa_rte = np.random.uniform(low=0.1, size=self.manifests)
-        self.tau_shp = np.random.uniform(low=0.1, size=self.packages)
-        self.tau_rte = np.random.uniform(low=0.1, size=self.packages)
-        self.phi = np.random.uniform(
-            low=0.1, size=[self.manifests, self.packages, K])
-        self.gam_shp = np.random.uniform(low=0.1, size=[self.manifests, K])
-        self.gam_rte = np.random.uniform(low=0.1, size=[self.manifests, K])
-        self.lam_shp = np.random.uniform(low=0.1, size=[self.packages, K])
-        self.lam_rte = np.random.uniform(low=0.1, size=[self.packages, K])
+        logger.info("Manifests: {}, packages: {}".format(self.manifests, self.packages))
+        np.random.seed(int(time.time()))
+        self. kappa_shp = np.nan_to_num(np.random.uniform(low=0.1, size=self.manifests))
+        self.kappa_rte = np.nan_to_num(np.random.uniform(low=0.1, size=self.manifests))
+        self.tau_shp = np.nan_to_num(np.random.uniform(low=0.1, size=self.packages))
+        self.tau_rte = np.nan_to_num(np.random.uniform(low=0.1, size=self.packages))
+        self.phi = np.empty(shape=[self.manifests, self.packages, K])
+        self.gam_rte = np.nan_to_num(np.random.uniform(low=0.1, size=[self.manifests, K]))
+        self.gam_shp = np.nan_to_num(self.gam_rte * np.random.uniform(low=0.85, high=1.15, size=[self.manifests, K]))
+        self.lam_rte = np.nan_to_num(np.random.uniform(low=0.1, size=[self.packages, K]))
+        self.lam_shp = np.nan_to_num(self.lam_rte * np.random.uniform(low=0.85, high=1.15, size=[self.packages, K]))
         self.non_zero_indices = non_zero_entries(self.rating_matrix)
         logger.info(
             "Size of rating matrix = {}*{}".format(self.manifests, self.packages))
@@ -74,7 +71,7 @@ class HyperParameterTuning:
                         np.sum(self.gam_shp[:, k] / self.gam_rte[:, k])
                 self.tau_rte[i] = (c_c / d_c) + \
                     np.sum(self.lam_shp[i, :] / self.lam_rte[i, :])
-            gc.collect()
+            logger.debug("Completed iteration: {} of {}".format(ite + 1, iterations))
 
     def loadlocal(self):
         """Load the previously generated rating matrix."""
@@ -91,7 +88,10 @@ class HyperParameterTuning:
         np.save("/tmp/hpf/gam_shp.npy", self.gam_shp)
         np.save("/tmp/hpf/gam_rte.npy", self.gam_rte)
         np.save("/tmp/hpf/lam_shp.npy", self.lam_shp)
+        sparse.save_npz("/tmp/hpf/lam_shp.npz", sparse.csc_matrix(self.lam_shp))
         np.save("/tmp/hpf/lam_rte.npy", self.lam_rte)
+        sparse.save_npz("/tmp/hpf/lam_rte.npz", sparse.csc_matrix(self.lam_rte))
+        logger.info("Saved all data to disk.")
 
     def execute(self):
         """Caller function for training."""

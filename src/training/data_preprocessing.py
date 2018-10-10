@@ -14,9 +14,9 @@ from src.utils import (cal_sparsity, normalise)
 import logging
 
 logging.basicConfig()
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-
+logging.getLogger('botocore').setLevel(logging.ERROR)
 
 class DataPreprocessing:
     """Data preprocessing for original rating matrix."""
@@ -42,7 +42,7 @@ class DataPreprocessing:
         logger.info("Number of manifests collected = {}".format(
             len(all_manifest_list)))
         self.trimmed_manifest_list = [
-            manifest for manifest in all_manifest_list if 13 < len(manifest) < 15]
+            manifest for manifest in all_manifest_list if len(manifest) > 20]
         logger.info("Number of trimmed manifest = {}". format(
             len(self.trimmed_manifest_list)))
         del(all_manifest_list)
@@ -87,7 +87,7 @@ class DataPreprocessing:
     def savelocal(self):
         """Store the resulting matrix and dicts under /tmp for future use."""
         # NOTE: Storing locally as read/write of huge rating matrix from S3 is
-        # not convinient.
+        # not convenient.
         sparse_rating_matrix = sparse.csr_matrix(self.rating_matrix)
         sparse.save_npz('/tmp/hpf/sparse_input_rating_matrix.npz',
                         sparse_rating_matrix)
@@ -132,5 +132,7 @@ class DataPreprocessing:
             cal_sparsity(self.rating_matrix)))
         assert set(list(np.nonzero(self.rating_matrix[0])[0])) == set(
             self.manifest_id_dict[0])
+        logger.debug("Total number of nonzero entires: {}".format(len(np.nonzero(self.rating_matrix)[0])))
+        logger.debug("Shape of rating matrix: {}".format(self.rating_matrix.shape))
         self.savelocal()
         self.saveS3()

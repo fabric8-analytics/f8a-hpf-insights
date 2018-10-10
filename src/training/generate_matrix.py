@@ -8,7 +8,7 @@ from edward.models import Gamma as IGR
 import tensorflow as tf
 from src.config import (HPF_SCORING_REGION,
                         HPF_output_user_matrix,
-                        HPF_output_item_matrix)
+                        HPF_output_item_matrix, HPF_LAM_SHP_PATH, HPF_LAM_RTE_PATH)
 import logging
 
 logging.basicConfig()
@@ -56,7 +56,7 @@ class GenerateMatrix:
         """Generate Theta-the user-feature matrix."""
         epsilon = IGR(self.kappa_shp, self.kappa_rte)
         epsilon_probs = epsilon.prob(
-            self.manifest_len_list).eval(session=tf.Session())
+            self.manifest_len_list).eval(session=tf.Session())  # Returns the PDF
         self.theta = IGR(self.gam_shp, self.gam_rte)
         self.theta = self.theta.prob(epsilon_probs.reshape(
             self.manifests, 1)).eval(session=tf.Session())
@@ -86,6 +86,10 @@ class GenerateMatrix:
             HPF_SCORING_REGION, HPF_output_item_matrix)
         self.datastore.upload_file(
             "/tmp/hpf/item_matrix.npz", beta_matrix_filename)
+        self.datastore.upload_file(
+            "/tmp/hpf/lam_shp.npz", os.path.join(HPF_SCORING_REGION, HPF_LAM_SHP_PATH))
+        self.datastore.upload_file(
+            "/tmp/hpf/lam_rte.npz", os.path.join(HPF_SCORING_REGION, HPF_LAM_RTE_PATH))
 
     def execute(self):
         """Caller function for training."""
