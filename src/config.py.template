@@ -21,6 +21,7 @@ HPF_input_raw_data = "training/manifest.json"
 
 MAX_COMPANION_REC_COUNT = int(os.environ.get("MAX_COMPANION_REC_COUNT", "5"))
 UNKNOWN_PACKAGES_THRESHOLD = float(os.environ.get("UNKNOWN_PACKAGES_THRESHOLD", "0.3"))
+MIN_REC_CONFIDENCE = float(os.environ.get("MIN_REC_CONFIDENCE", "0.30"))
 
 # Model filepaths
 HPF_output_package_id_dict = "scoring/package_id_dict.json"

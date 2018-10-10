@@ -38,6 +38,8 @@ objects:
         value: ${FLASK_LOGGING_LEVEL}
       - name: MAX_COMPANION_REC_COUNT
         value: "${MAX_COMPANION_REC_COUNT}"
+      - name: MIN_REC_CONFIDENCE
+        value: "${MIN_REC_CONFIDENCE}"
       - name: UNKNOWN_PACKAGES_THRESHOLD
         value: "${UNKNOWN_PACKAGES_THRESHOLD}"
       - name: USE_CLOUD_SERVICES
@@ -167,6 +169,12 @@ parameters:
   required: false
   name: MAX_COMPANION_REC_COUNT
   value: "5"
+
+- description: Minimum recommendation confidence score
+  displayName: Minimum recommendation confidence score
+  required: true
+  name: MIN_REC_CONFIDENCE
+  value: "0.30"
 
 - description: Use S3 or Local datastore
   displayName: USe S3 or Local datastore
