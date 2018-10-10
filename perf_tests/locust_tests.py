@@ -1,7 +1,7 @@
 """Load Testing Companion Recommendation."""
 
 import json
-from locust import HttpLocust, TaskSet, events, task, web
+from locust import HttpLocust, TaskSet, task
 from collections import Counter
 import random
 
@@ -99,6 +99,7 @@ class HPFInsightsBehaviour(TaskSet):
         response = self.client.post("/api/v1/companion_recommendation",
                                     data=json.dumps(get_packages()),
                                     headers={"Content-type": "application/json"})
+        assert response
 
 
 class HPFInsightsLocust(HttpLocust):

@@ -2,11 +2,22 @@
 **(fabric8-analytics-hpf-insights)**
 
 HPF Matrix Factorizations for companion recommendation.
-
 *HPF- Hierarchical Poisson Factorization*
 
+## Index:
+* [Supported Ecosytems](#supported-ecosytems)
+* [Build Upon](#build-upon)
+* [Deploy Locally](#to-run-locally-via-docker-compose)
+* [Deploy on DevCluster](#to-run-on-dev-cluster)
+* [Run Unit Tests](#unit-tests)
+* [Run Load Tests](#to-run-load-testing-for-recommendation-api)
+* [Footnotes](#footnotes)
+    * [Coding Standards](#coding-standards)
+    * [Code Complexity Measurement](#code-complexity-measurement)
+* [Additional links](#additional-links)
+
 ## Supported ecosystems:
-* Maven
+* Maven - Last trained at: 2018-08-08 11:30 IST(UTC +5:30)
 
 ## Build upon:
 * https://github.com/arindamsarkar93/hcpf
@@ -33,6 +44,13 @@ HPF Matrix Factorizations for companion recommendation.
 * Go your Openshift console and expose the route
 * `curl <route_URL>` should return `status:ok`
 
+## Unit Tests
+There's a script named `runtests.sh` that can be used to run all unit tests. The unit test coverage is reported as well by this script.
+
+Usage:
+```
+./runtests.sh
+```
 
 ## To run load testing for recommendation API:
 
@@ -40,7 +58,7 @@ HPF Matrix Factorizations for companion recommendation.
 * Bring up the service.
 * `locust -f perf_tests/locust_tests.py --host=<URL of the service>`
 
-### Footnotes:
+## Footnotes:
 
 #### Coding standards:
 
@@ -100,7 +118,8 @@ The script named `check-bashscripts.sh` can be used to check all BASH scripts (i
 
 Please see [the following link](https://github.com/koalaman/shellcheck) for further explanation, how the ShellCheck works and which issues can be detected.
 
-### Additional links:
+## Additional links:
+* [Feedback logic](https://github.com/fabric8-analytics/f8a-hpf-insights/wiki/Feedback-Logic)
 * [Pushing Image to Docker Hub](https://ropenscilabs.github.io/r-docker-tutorial/04-Dockerhub.html)
 * [PAPER: Scalable Recommendation with Poisson Factorization](https://arxiv.org/abs/1311.1704)
 * [PAPER: Hierarchical Compound Poisson Factorization](https://arxiv.org/abs/1604.03853)

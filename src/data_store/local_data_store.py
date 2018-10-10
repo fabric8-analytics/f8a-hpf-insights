@@ -3,6 +3,8 @@
 import fnmatch
 import json
 import os
+from collections import OrderedDict
+from shutil import copyfile
 
 from src.data_store.abstract_data_store import AbstractDataStore
 
@@ -16,33 +18,29 @@ class LocalDataStore(AbstractDataStore):
 
     def get_name(self):
         """Get the name that identifies the storage."""
-        return "Local filesytem dir: " + self.src_dir
+        return "Local filesystem dir: " + self.src_dir
 
     def list_files(self, prefix=None, max_count=None):
         """List all the json files in the source directory."""
         list_filenames = []
+        pattern = ''.join([(prefix or ''), "*.json"])
         for root, dirs, files in os.walk(self.src_dir):
             for basename in files:
-                if fnmatch.fnmatch(basename, "*.json"):
-                    filename = os.path.join(root, basename)
-                    filename = filename[len(self.src_dir):]
+                if fnmatch.fnmatch(basename, pattern):
+                    filename = os.path.relpath(
+                            os.path.join(root, basename), self.src_dir)
                     list_filenames.append(filename)
         list_filenames.sort()
-        return list_filenames
+        return list_filenames[:max_count]
 
     def remove_json_file(self, filename):
         """Remove JSON file from the data_input source file path."""
         return os.remove(os.path.join(self.src_dir, filename))
 
-    def read_generic_file(self, filename):
-        """Read a file and return its contents."""
-        with open(os.path.join(self.src_dir, filename)) as fileObj:
-            return fileObj.read()
-
     def read_json_file(self, filename):
         """Read JSON file from the data_input source."""
-        with open(os.path.join(self.src_dir, filename)) as json_fileobj:
-            return json.load(json_fileobj)
+        with open(os.path.join(self.src_dir, filename), "r") as json_fileobj:
+            return json.load(json_fileobj, object_pairs_hook=OrderedDict)
 
     def read_all_json_files(self):
         """Read all the files from the data_input source."""
@@ -59,10 +57,10 @@ class LocalDataStore(AbstractDataStore):
             json.dump(contents, outfile)
         return None
 
-    def upload_file(self, src, target):
+    def upload_file(self, _src, _target):
         """Upload file into data store."""
         raise NotImplementedError()
 
-    def download_file(self, src, target):
+    def download_file(self, _src, _target):
         """Download file from data store."""
-        raise NotImplementedError()
+        copyfile(os.path.join(self.src_dir, _src), _target)
