@@ -11,10 +11,16 @@ AWS_S3_BUCKET_NAME = os.environ.get("AWS_S3_BUCKET_NAME", "hpf-insights")
 # Flask endpoint constants
 SERVICE_PORT = "6006"
 SERVICE_TIMEOUT = "900"
+HPF_SCORING_REGION = os.environ.get("HPF_SCORING_REGION", "maven")
+
+# Training constants
+HPF_input_raw_data = "training/manifest.json"
+COMPONENT_PREFIX = 'hpf'
+BOOTSTRAP_ACTIONS_TEMPLATE = '/deployments/bootstrap_action.sh'
+SOURCE_CODE_ZIPPED_PATH = '/tmp/training.zip'
 USE_CLOUD_SERVICES = os.environ.get("USE_CLOUD_SERVICES", "False")
 
 # Scoring constants
-HPF_SCORING_REGION = os.environ.get("HPF_SCORING_REGION", "maven")
 MAX_COMPANION_REC_COUNT = int(os.environ.get("MAX_COMPANION_REC_COUNT", "5"))
 UNKNOWN_PACKAGES_THRESHOLD = float(os.environ.get("UNKNOWN_PACKAGES_THRESHOLD", "0.3"))
 MIN_REC_CONFIDENCE = float(os.environ.get("MIN_REC_CONFIDENCE", "0.30"))

@@ -8,3 +8,5 @@ botocore
 gunicorn
 scipy
 connexion
+daiquiri
+requests
