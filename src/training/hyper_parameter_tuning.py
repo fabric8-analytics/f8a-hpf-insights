@@ -32,9 +32,11 @@ class HyperParameterTuning:
         self.tau_rte = np.nan_to_num(np.random.uniform(low=0.1, size=self.packages))
         self.phi = np.empty(shape=[self.manifests, self.packages, K])
         self.gam_rte = np.nan_to_num(np.random.uniform(low=0.1, size=[self.manifests, K]))
-        self.gam_shp = np.nan_to_num(self.gam_rte * np.random.uniform(low=0.85, high=1.15, size=[self.manifests, K]))
+        self.gam_shp = np.nan_to_num(
+                self.gam_rte * np.random.uniform(low=0.85, high=1.15, size=[self.manifests, K]))
         self.lam_rte = np.nan_to_num(np.random.uniform(low=0.1, size=[self.packages, K]))
-        self.lam_shp = np.nan_to_num(self.lam_rte * np.random.uniform(low=0.85, high=1.15, size=[self.packages, K]))
+        self.lam_shp = np.nan_to_num(
+                self.lam_rte * np.random.uniform(low=0.85, high=1.15, size=[self.packages, K]))
         self.non_zero_indices = non_zero_entries(self.rating_matrix)
         logger.info(
             "Size of rating matrix = {}*{}".format(self.manifests, self.packages))

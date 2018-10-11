@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 logging.getLogger('botocore').setLevel(logging.ERROR)
 
+
 class DataPreprocessing:
     """Data preprocessing for original rating matrix."""
 
@@ -131,7 +132,8 @@ class DataPreprocessing:
             cal_sparsity(self.rating_matrix)))
         assert set(list(np.nonzero(self.rating_matrix[0])[0])) == set(
             self.manifest_id_dict[0])
-        logger.debug("Total number of nonzero entires: {}".format(len(np.nonzero(self.rating_matrix)[0])))
+        logger.debug(
+            "Total number of nonzero entires: {}".format(len(np.nonzero(self.rating_matrix)[0])))
         logger.debug("Shape of rating matrix: {}".format(self.rating_matrix.shape))
         self.savelocal()
         self.saveS3()

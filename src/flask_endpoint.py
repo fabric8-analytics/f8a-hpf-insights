@@ -123,6 +123,7 @@ def hpf_model_details():
 
 app.add_api(SWAGGER_YAML_PATH)
 
+
 @app.route('/api/v1/train_model', methods=['POST'])
 def submit_training_job():
     """Submit a training job to run on the EMR cluster."""
@@ -130,6 +131,7 @@ def submit_training_job():
                           input_src_code_file=SOURCE_CODE_ZIPPED_PATH)
 
     return flask.jsonify(response)
+
 
 if __name__ == "__main__":
     app.run(debug=True, port=6006)

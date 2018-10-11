@@ -141,7 +141,9 @@ def submit_job(input_bootstrap_file, input_src_code_file):
                 'ActionOnFailure': 'TERMINATE_CLUSTER',
                 'HadoopJarStep': {
                     'Jar': 'command-runner.jar',
-                    'Args': ['/bin/sh', '-c', "PYTHONPATH='/home/hadoop' python3.6 /home/hadoop/src/training/training_start.py"]
+                    'Args': ['/bin/sh', '-c',
+                             "PYTHONPATH='/home/hadoop' python3.6"
+                             " /home/hadoop/src/training/training_start.py"]
                 }
             }
         ],
