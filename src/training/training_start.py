@@ -6,9 +6,11 @@ from src.data_store.s3_data_store import S3DataStore
 from src.training.data_preprocessing import DataPreprocessing
 from src.training.hyper_parameter_tuning import HyperParameterTuning
 from src.training.generate_matrix import GenerateMatrix
+from src.training.generate_feedback import Feedback
 from src.config import (AWS_S3_ACCESS_KEY_ID,
                         AWS_S3_SECRET_ACCESS_KEY,
-                        AWS_S3_BUCKET_NAME)
+                        AWS_S3_BUCKET_NAME,
+                        USE_FEEDBACK)
 import logging
 
 logging.basicConfig()
@@ -50,6 +52,12 @@ def trainingS3():
     gm.execute()
     logger.info(
         "Generation of matrices ended in {} seconds".format(time.time() - t0))
+    if USE_FEEDBACK:
+        t0 = time.time()
+        logger.info("Start generating feedback matrix")
+        fb = Feedback(datastore=s3_object)
+        fb.execute()
+        logger.info("Generation of feedback matrix took {} seconds".format(time.time() - t0))
     t0 = time.time()
     logger.info("HPF training completed in {} seconds.".format(
         time.time() - t_start))
