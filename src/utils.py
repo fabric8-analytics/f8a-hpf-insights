@@ -1,6 +1,11 @@
 """Some helper functions."""
-import numpy as np
 import logging
+import subprocess
+
+import numpy as np
+
+logging.basicConfig()
+logger = logging.getLogger(__name__)
 
 
 def convert_string2bool_env(parameter):

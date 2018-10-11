@@ -26,8 +26,8 @@ def trainingS3():
             logger.info("HPF directory created.")
         else:
             logger.info("HPF directory exits using it.")
-    except Exception as e:
-        logger.info("Could not create temp HPF directory.")
+    except OSError:
+        logger.critical("Could not create temp HPF directory.")
         exit(1)
     s3_object = S3DataStore(src_bucket_name=AWS_S3_BUCKET_NAME,
                             access_key=AWS_S3_ACCESS_KEY_ID,

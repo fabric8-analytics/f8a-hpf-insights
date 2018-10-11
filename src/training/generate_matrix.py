@@ -1,15 +1,15 @@
 """Generate User-Item matrices after training."""
 
-import numpy as np
-import json
-import os
-from scipy import sparse
-from edward.models import Gamma as IGR
-import tensorflow as tf
-from src.config import (HPF_SCORING_REGION,
-                        HPF_output_user_matrix,
-                        HPF_output_item_matrix, HPF_LAM_SHP_PATH, HPF_LAM_RTE_PATH)
 import logging
+import os
+
+import numpy as np
+import tensorflow as tf
+from edward.models import Gamma as IGR
+from scipy import sparse
+
+from src.config import (HPF_LAM_RTE_PATH, HPF_LAM_SHP_PATH, HPF_SCORING_REGION,
+                        HPF_output_item_matrix, HPF_output_user_matrix)
 
 logging.basicConfig()
 logger = logging.getLogger()

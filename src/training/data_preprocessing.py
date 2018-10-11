@@ -1,7 +1,6 @@
 """Data preprocessing for original rating matrix."""
 
 import numpy as np
-import json
 import os
 from collections import Counter
 from scipy import sparse
