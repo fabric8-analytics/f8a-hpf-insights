@@ -187,7 +187,7 @@ parameters:
   displayName: Minimum recommendation confidence score
   required: true
   name: MIN_REC_CONFIDENCE
-  value: "0.30"
+  value: "30"
 
 - description: Restart policy
   displayName: Restart policy
