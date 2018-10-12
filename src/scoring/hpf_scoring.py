@@ -278,7 +278,7 @@ class HPFScoring:
         result = np.divide(result, np.std(result))
         for package_id in recommended_ids:
             recommendation = {
-                "cooccurrence_probability": round(_sigmoid(result[package_id]), 2),
+                "cooccurrence_probability": round(_sigmoid(result[package_id]) * 100, 2),
                 "package_name": self.id_package_dict[package_id],
                 "topic_list": []  # We don't have topics for this ecosystem!!
             }
