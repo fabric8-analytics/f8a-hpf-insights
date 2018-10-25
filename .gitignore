@@ -111,3 +111,5 @@ config.py
 *env*/
 secret.yaml
 README.html
+html/
+latex/
