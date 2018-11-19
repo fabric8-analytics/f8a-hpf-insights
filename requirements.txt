@@ -41,3 +41,4 @@ tensorflow==1.4.1
 urllib3==1.23             # via requests
 werkzeug==0.14.1          # via flask, tensorflow-tensorboard
 wheel==0.31.1             # via tensorflow, tensorflow-tensorboard
+codecov

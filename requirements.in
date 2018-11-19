@@ -8,3 +8,4 @@ botocore
 gunicorn
 scipy
 connexion
+codecov
