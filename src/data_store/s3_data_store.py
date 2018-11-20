@@ -11,6 +11,9 @@ from src.config import (AWS_S3_ENDPOINT_URL)
 from src.data_store.abstract_data_store import AbstractDataStore
 
 
+# TODO: remove pragma: no cover
+# TODO: think about moving this to some common library
+
 class S3DataStore(AbstractDataStore):  # pragma: no cover
     """Class that represents S3 data storage."""
 
