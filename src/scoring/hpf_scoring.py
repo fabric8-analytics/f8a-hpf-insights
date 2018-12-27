@@ -14,7 +14,7 @@ from flask import current_app
 from scipy import sparse
 from scipy.special import psi
 
-from src.config import (HPF_LAM_RTE_PATH, HPF_LAM_SHP_PATH, HPF_SCORING_REGION,
+from src.config import (HPF_LAM_RTE_PATH, HPF_LAM_SHP_PATH, HPF_SCORING_REGION,HPF_MODEL_PATH
                         HPF_output_feedback_id_dict, HPF_output_feedback_matrix,
                         HPF_output_item_matrix, HPF_output_manifest_id_dict,
                         HPF_output_package_id_dict, HPF_output_user_matrix,
@@ -45,7 +45,7 @@ else:
 class HPFScoring:
     """The HPF Model scoring class."""
 
-    def __init__(self, datastore=None, USE_FEEDBACK=USE_FEEDBACK):
+    def __init__(self, datastore=None, num_recommendations, USE_FEEDBACK=USE_FEEDBACK):
         """Set the variables and load model data."""
         self.datastore = datastore
         self.USE_FEEDBACK = convert_string2bool_env(USE_FEEDBACK)
@@ -57,9 +57,11 @@ class HPFScoring:
         self.manifest_id_dict = OrderedDict()
         self.feedback_id_dict = OrderedDict()
         self.manifests = 0
+        self.recommender = self._load_model()
         self.logger = logging.getLogger(__name__ + '.HPFScoring')
         self.packages = 0
         self.loadObjects()
+        self.m = num_recommendations
 
     @staticmethod
     def _getsizeof(attribute):
@@ -68,6 +70,10 @@ class HPFScoring:
         param attribute: The object's attribute.
         """
         return "{} MB".format(getsizeof(attribute) / 1024 / 1024)
+
+    def _load_model(self):
+        """Load the model from s3."""
+        return self.s3_client.read_pickle_file(HPF_MODEL_PATH)
 
     def model_details(self):
         """Return the model details size."""
@@ -159,7 +165,7 @@ class HPFScoring:
             return [], {}, list(missing_packages)
         manifest_match = self.match_manifest(input_id_set)
         if manifest_match > 0:
-            companion_recommendation = self.recommend_known_user(manifest_match, input_id_set)
+            companion_recommendation = self.recommend_known_user(manifest_match)
         else:
             companion_recommendation = self.recommend_new_user(list(input_id_set))
         return companion_recommendation, package_topic_dict, list(missing_packages)
@@ -193,11 +199,14 @@ class HPFScoring:
                 return int(manifest_id)
         return -1
 
-    def recommend_known_user(self, user_match, input_stack):
+    def recommend_known_user(self, user_match):
         """Give the recommendation for a user(manifest) that was in the training set."""
         _logger.debug("Recommending for existing user: {}".format(user_match))
-        rec = np.dot(self.theta[user_match], self.beta.T)
-        return self.filter_recommendation(rec, input_stack)
+       recommendations = self.recommender.topN(
+                user= user_match,
+                n=self.m
+            )
+        return recommendations
 
     def recommend_new_user(self, input_user_stack, k=config.K):
         """Implement the 'fold-in' logic.
