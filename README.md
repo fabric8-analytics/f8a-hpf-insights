@@ -5,7 +5,7 @@ HPF Matrix Factorizations for companion recommendation.
 *HPF- Hierarchical Poisson Factorization*
 
 ## Index:
-* [Supported Ecosytems](#supported-ecosytems)
+* [Supported Ecosystems](#supported-ecosystems)
 * [Build Upon](#build-upon)
 * [Deploy Locally](#to-run-locally-via-docker-compose)
 * [Deploy on DevCluster](#to-run-on-dev-cluster)
@@ -24,7 +24,7 @@ HPF Matrix Factorizations for companion recommendation.
 
 ## To run locally via docker-compose:
 
-* Setup Minio and start Minio server so that `hpf-insights` is loaded as a folder inside it upon running. To use AWS S3 instead of Minio add your AWS S3 credentials in the next step instead of Miino credentials.
+* Setup Minio and start Minio server so that `hpf-insights` is loaded as a folder inside it upon running. To use AWS S3 instead of Minio add your AWS S3 credentials in the next step instead of Minio credentials.
 * Create a `.env` file and add credentials to it.
 * In the `.env` set the `AWS_S3_ENDPOINT_URL` to `<blank>` for using AWS S3 and to `http://ip:port` for using Minio.
 * `source .env`
@@ -70,7 +70,7 @@ Usage:
 ```
 
 The first script checks the indentation, line lengths, variable names, whitespace around operators etc. The second
-script checks all documentation strings - its presense and format. Please fix any warnings and errors reported by these
+script checks all documentation strings - its presence and format. Please fix any warnings and errors reported by these
 scripts.
 
 #### Code complexity measurement:
@@ -112,7 +112,7 @@ Please note that only semantical problems are reported.
 
 #### Check for scripts written in BASH
 
-The script named `check-bashscripts.sh` can be used to check all BASH scripts (in fact: all files with the `.sh` extension) for various possible issues, incompatibilies, and caveats. This script can be run w/o any arguments:
+The script named `check-bashscripts.sh` can be used to check all BASH scripts (in fact: all files with the `.sh` extension) for various possible issues, incompatibilities, and caveats. This script can be run w/o any arguments:
 
 ```
 ./check-bashscripts.sh
