@@ -28,6 +28,7 @@ jsonschema==2.6.0         # via connexion, swagger-spec-validator
 markdown==2.6.11          # via tensorflow-tensorboard
 markupsafe==1.0           # via jinja2
 numpy==1.15.0
+pandas==0.23.2
 protobuf==3.6.1           # via tensorflow, tensorflow-tensorboard
 python-dateutil==2.7.3    # via botocore
 pyyaml==3.13              # via clickclick, connexion, swagger-spec-validator

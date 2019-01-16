@@ -39,6 +39,10 @@ class S3DataStore(AbstractDataStore):  # pragma: no cover
         """Read JSON file from the S3 bucket."""
         return json.loads(self.read_generic_file(filename), object_pairs_hook=OrderedDict)
 
+    def read_pickle_file(self, filename):
+        """Read Pandas file from the S3 bucket. """
+        return pickle.loads(self.read_generic_file(filename))
+
     def read_generic_file(self, filename):
         """Read a file from the S3 bucket."""
         obj = self.s3_resource.Object(self.bucket_name, filename).get()[

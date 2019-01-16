@@ -42,6 +42,11 @@ class LocalDataStore(AbstractDataStore):
         with open(os.path.join(self.src_dir, filename), "r") as json_fileobj:
             return json.load(json_fileobj, object_pairs_hook=OrderedDict)
 
+    def read_pickle_file(self, filename):
+        """Read Pandas file from the S3 bucket. """
+        with open(os.path.join(self.src_dir, filename), "rb") as pickle_fileobj:
+            return pickle.load(pickle_fileobj)
+
     def read_all_json_files(self):
         """Read all the files from the data_input source."""
         list_filenames = self.list_files(prefix=None)
@@ -57,10 +62,3 @@ class LocalDataStore(AbstractDataStore):
             json.dump(contents, outfile)
         return None
 
-    def upload_file(self, _src, _target):
-        """Upload file into data store."""
-        raise NotImplementedError()
-
-    def download_file(self, _src, _target):
-        """Download file from data store."""
-        copyfile(os.path.join(self.src_dir, _src), _target)
