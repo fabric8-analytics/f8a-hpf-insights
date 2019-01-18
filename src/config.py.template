@@ -28,7 +28,7 @@ HPF_output_feedback_matrix = "scoring/feedback_matrix.npz"
 HPF_output_feedback_id_dict = "scoring/feedback_id_dict.json"
 
 # Saved Model path
-HPF_MODEL_PATH = "scoring/hpf-model/hpf_model.pkl"
+HPF_MODEL_PATH = os.path.join(HPF_SCORING_REGION,"scoring/hpf-model/hpf_model.pkl")
 
 # Model HyperParameters
 a = 0.3
