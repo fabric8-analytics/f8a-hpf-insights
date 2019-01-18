@@ -2,6 +2,7 @@
 
 import logging
 import os
+import itertools
 import time
 from collections import OrderedDict
 from math import exp, log
@@ -16,7 +17,7 @@ from scipy.special import psi
 
 from src.config import (HPF_SCORING_REGION, HPF_MODEL_PATH,
                         HPF_output_manifest_id_dict,
-                        HPF_output_package_id_dict, 
+                        HPF_output_package_id_dict,
                         MAX_COMPANION_REC_COUNT,
                         b_c, feedback_threshold, iter_score, stop_thr, MIN_REC_CONFIDENCE)
 import src.config as config
@@ -30,7 +31,6 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 logging.getLogger('botocore').setLevel(logging.ERROR)
 logging.getLogger('s3transfer').setLevel(logging.ERROR)
 logging.getLogger('boto3').setLevel(logging.ERROR)
-
 
 if current_app:  # pragma: no cover
     _logger = current_app.logger
@@ -66,14 +66,18 @@ class HPFScoring:
         """
         return "{} MB".format(getsizeof(attribute) / 1024 / 1024)
 
+    def _load_model(self):
+        """Load the model from s3."""
+        return self.datastore.read_pickle_file(HPF_MODEL_PATH)
+
     def model_details(self):
         """Return the model details size."""
         details = """The model will be scored against
         {} Packages,
-        {} Manifests,""".\
+        {} Manifests,""". \
             format(
-                len(self.package_id_dict),
-                len(self.manifest_id_dict))
+            len(self.package_id_dict),
+            len(self.manifest_id_dict))
         return details
 
     def loadObjects(self):  # pragma: no cover
@@ -89,7 +93,6 @@ class HPFScoring:
         self.manifest_id_dict = self.datastore.read_json_file(manifest_id_dict_filename)
         self.manifest_id_dict = OrderedDict({n: set(x) for n, x in self.manifest_id_dict[
             0].get("manifest_list", {}).items()})
-
 
     def predict(self, input_stack):
         """Prediction function.
@@ -125,12 +128,10 @@ class HPFScoring:
         manifest_match = self.match_manifest(input_id_set)
         if manifest_match > 0:
             result, user_id = self.recommend_known_user(manifest_match, input_id_set)
-            companion_recommendation = self.filter_recommendation(result, input_id_set, user_id)
         else:
             result, user_id = self.recommend_new_user(list(input_id_set))
-            companion_recommendation = self.filter_recommendation(result, input_id_set, user_id)
+        companion_recommendation = self.filter_recommendation(result, input_id_set, user_id)
         return companion_recommendation, package_topic_dict, list(missing_packages)
-
 
     def match_manifest(self, input_id_set):  # pragma: no cover
         """Find a manifest list that matches user's input package list and return its index.
@@ -142,34 +143,20 @@ class HPFScoring:
         for manifest_id, dependency_set in self.manifest_id_dict.items():
             if input_id_set.issubset(dependency_set):
                 current_app.logger.debug(
-                        "input_id_set {} and manifest_id {}".format(input_id_set, manifest_id))
+                    "input_id_set {} and manifest_id {}".format(input_id_set, manifest_id))
                 return int(manifest_id)
         return -1
 
     def package_labelling(self, package_list):
-            package_data = self.package_id_dict.items()
-            labeled_packages = dict((v,k) for k,v in package_data)
-            labeled_package_list = [labeled_packages[i] for i in package_list]
-            return labeled_package_list    
-
-    def match_manifest(self, input_id_set):  # pragma: no cover
-        """Find a manifest list that matches user's input package list and return its index.
-
-        :param input_id_set: A set containing package ids of user's input package list.
-        :return manifest_id: The index of the matched manifest.
-        """
-        # TODO: Go back to the difference based logic, this simpler logic will do for now.
-        for manifest_id, dependency_set in self.manifest_id_dict.items():
-            if input_id_set.issubset(dependency_set):
-                current_app.logger.debug(
-                        "input_id_set {} and manifest_id {}".format(input_id_set, manifest_id))
-                return int(manifest_id)
-        return -1
+        package_data = self.package_id_dict.items()
+        labeled_packages = dict((v, k) for k, v in package_data)
+        labeled_package_list = [labeled_packages[i] for i in package_list]
+        return labeled_package_list
 
     def recommend_known_user(self, user_match, input_id_set):
         """Give the recommendation for a user(manifest) that was in the training set."""
         _logger.debug("Recommending for existing user: {}".format(user_match))
-        recommendations = self.recommender.topN(user= user_match, n=self.m) 
+        recommendations = self.recommender.topN(user=user_match, n=self.m)
 
         return recommendations, user_match
 
@@ -179,17 +166,16 @@ class HPFScoring:
         For more information please follow: https://hpfrec.readthedocs.io/en/latest/source/hpfrec.html
         """
         new_df = pd.DataFrame({
-                'ItemId':input_id_set,
-                'Count': [1]*len(input_id_set)})
-        user_id  =self.recommender.nusers
-        is_user_added = self.recommender.add_user(user_id = user_id, counts_df = new_df)
+            'ItemId': input_id_set,
+            'Count': [1] * len(input_id_set)})
+        user_id = self.recommender.nusers
+        is_user_added = self.recommender.add_user(user_id=user_id, counts_df=new_df)
         if is_user_added:
             user_id -= 1
-            recommendations = self.recommender.topN(user_id, n = self.m)
+            recommendations = self.recommender.topN(user_id, n=self.m)
             return recommendations, user_id
         else:
             _logger.info('Unable to add user')
-
 
     def filter_recommendation(self, result, input_stack, user_id):
         """Used for calculaing cooccurrence probability of companion packages and for filter packages."""
@@ -197,7 +183,7 @@ class HPFScoring:
         recommendations = result
         companion_packages = []
         recommendations = np.array(list(itertools.compress(recommendations,
-                                        [i not in package_id_set for i in recommendations])))
+                                                           [i not in package_id_set for i in recommendations])))
 
         print("Filtered recommendation ids are: " + str(recommendations))
 
@@ -207,7 +193,8 @@ class HPFScoring:
         )
 
         def sigmoid(array):
-            return 1/(1 + np.exp(-array))
+            return 1 / (1 + np.exp(-array))
+
         # This is copy pasted on as is basis from Pypi and NPM model.
         # It's not the right way of calculating probability by any means.
         # There is a more lengthier way to calculate probabilities using
