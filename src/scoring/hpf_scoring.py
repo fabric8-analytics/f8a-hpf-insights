@@ -148,8 +148,7 @@ class HPFScoring:
         return -1
 
     def package_labelling(self, package_list):
-        package_data = self.package_id_dict.items()
-        labeled_packages = dict((v, k) for k, v in package_data)
+        labeled_packages = self.id_package_dict
         labeled_package_list = [labeled_packages[i] for i in package_list]
         return labeled_package_list
 
