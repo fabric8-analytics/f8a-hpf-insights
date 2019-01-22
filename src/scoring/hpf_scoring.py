@@ -3,26 +3,15 @@
 import logging
 import os
 import itertools
-import time
 from collections import OrderedDict
-from math import exp, log
 from sys import getsizeof
 import pandas as pd
 import numpy as np
-import tensorflow as tf
-from edward.models import Gamma, Uniform
 from flask import current_app
-from scipy import sparse
-from scipy.special import psi
 
 from src.config import (HPF_SCORING_REGION, HPF_MODEL_PATH,
                         HPF_output_manifest_id_dict,
-                        HPF_output_package_id_dict,
-                        MAX_COMPANION_REC_COUNT,
-                        b_c, feedback_threshold, iter_score, stop_thr, MIN_REC_CONFIDENCE)
-import src.config as config
-
-from src.utils import convert_string2bool_env
+                        HPF_output_package_id_dict, MIN_REC_CONFIDENCE)
 
 # To turn off tensorflow CPU warning
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
@@ -76,13 +65,12 @@ class HPFScoring:
         {} Packages,
         {} Manifests,""". \
             format(
-            len(self.package_id_dict),
-            len(self.manifest_id_dict))
+                len(self.package_id_dict),
+                len(self.manifest_id_dict))
         return details
 
     def loadObjects(self):  # pragma: no cover
         """Load the model data from AWS S3."""
-
         package_id_dict_filename = os.path.join(HPF_SCORING_REGION, HPF_output_package_id_dict)
         self.package_id_dict = self.datastore.read_json_file(package_id_dict_filename)
         self.id_package_dict = OrderedDict({x: n for n, x in self.package_id_dict[
@@ -127,7 +115,7 @@ class HPFScoring:
             return [], {}, list(missing_packages)
         manifest_match = self.match_manifest(input_id_set)
         if manifest_match > 0:
-            result, user_id = self.recommend_known_user(manifest_match, input_id_set)
+            result, user_id = self.recommend_known_user(manifest_match)
         else:
             result, user_id = self.recommend_new_user(list(input_id_set))
         companion_recommendation = self.filter_recommendation(result, input_id_set, user_id)
@@ -139,7 +127,10 @@ class HPFScoring:
         :param input_id_set: A set containing package ids of user's input package list.
         :return manifest_id: The index of the matched manifest.
         """
+        # no blank line allowed here
+
         # TODO: Go back to the difference based logic, this simpler logic will do for now.
+
         for manifest_id, dependency_set in self.manifest_id_dict.items():
             if input_id_set.issubset(dependency_set):
                 current_app.logger.debug(
@@ -148,11 +139,12 @@ class HPFScoring:
         return -1
 
     def package_labelling(self, package_list):
+        """Will return package names for given package id list."""
         labeled_packages = self.id_package_dict
         labeled_package_list = [labeled_packages[i] for i in package_list]
         return labeled_package_list
 
-    def recommend_known_user(self, user_match, input_id_set):
+    def recommend_known_user(self, user_match):
         """Give the recommendation for a user(manifest) that was in the training set."""
         _logger.debug("Recommending for existing user: {}".format(user_match))
         recommendations = self.recommender.topN(user=user_match, n=self.m)
@@ -160,10 +152,13 @@ class HPFScoring:
         return recommendations, user_match
 
     def recommend_new_user(self, input_id_set):
-        """Implement the 'add_user' addon of HPFREC model. 
-
-        For more information please follow: https://hpfrec.readthedocs.io/en/latest/source/hpfrec.html
         """
+        Implement the 'add_user' addon of HPFREC model.
+
+        For more information please follow:
+        https://hpfrec.readthedocs.io/en/latest/source/hpfrec.html
+        """
+        # no blank line allowed here
         new_df = pd.DataFrame({
             'ItemId': input_id_set,
             'Count': [1] * len(input_id_set)})
@@ -173,16 +168,17 @@ class HPFScoring:
             user_id -= 1
             recommendations = self.recommender.topN(user_id, n=self.m)
             return recommendations, user_id
-        else:
-            _logger.info('Unable to add user')
+
+        return _logger.info('Unable to add user')
 
     def filter_recommendation(self, result, input_stack, user_id):
-        """Used for calculaing cooccurrence probability of companion packages and for filter packages."""
+        """Use for co-occurrence probability and for filtering of companion packages."""
         package_id_set = input_stack
         recommendations = result
         companion_packages = []
-        recommendations = np.array(list(itertools.compress(recommendations,
-                                                           [i not in package_id_set for i in recommendations])))
+        recommendations = \
+            np.array(list(itertools.compress(recommendations,
+                                             [i not in package_id_set for i in recommendations])))
 
         print("Filtered recommendation ids are: " + str(recommendations))
 

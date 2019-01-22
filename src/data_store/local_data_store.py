@@ -4,8 +4,7 @@ import fnmatch
 import json
 import os
 from collections import OrderedDict
-from shutil import copyfile
-
+import pickle
 from src.data_store.abstract_data_store import AbstractDataStore
 
 
@@ -28,7 +27,7 @@ class LocalDataStore(AbstractDataStore):
             for basename in files:
                 if fnmatch.fnmatch(basename, pattern):
                     filename = os.path.relpath(
-                            os.path.join(root, basename), self.src_dir)
+                        os.path.join(root, basename), self.src_dir)
                     list_filenames.append(filename)
         list_filenames.sort()
         return list_filenames[:max_count]
@@ -43,7 +42,7 @@ class LocalDataStore(AbstractDataStore):
             return json.load(json_fileobj, object_pairs_hook=OrderedDict)
 
     def read_pickle_file(self, filename):
-        """Read Pandas file from the S3 bucket. """
+        """Read Pandas file from the S3 bucket."""
         with open(os.path.join(self.src_dir, filename), "rb") as pickle_fileobj:
             return pickle.load(pickle_fileobj)
 
@@ -61,4 +60,3 @@ class LocalDataStore(AbstractDataStore):
         with open(os.path.join(self.src_dir, filename), 'w') as outfile:
             json.dump(contents, outfile)
         return None
-
