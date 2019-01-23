@@ -63,7 +63,7 @@ class HPFScoring:
         """Return the model details size."""
         details = """The model will be scored against
         {} Packages,
-        {} Manifests,""". \
+        {} Manifests""". \
             format(
                 len(self.package_id_dict),
                 len(self.manifest_id_dict))

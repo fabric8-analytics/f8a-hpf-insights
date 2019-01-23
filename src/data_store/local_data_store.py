@@ -6,6 +6,7 @@ import os
 from collections import OrderedDict
 import pickle
 from src.data_store.abstract_data_store import AbstractDataStore
+from shutil import copyfile
 
 
 class LocalDataStore(AbstractDataStore):
@@ -60,3 +61,11 @@ class LocalDataStore(AbstractDataStore):
         with open(os.path.join(self.src_dir, filename), 'w') as outfile:
             json.dump(contents, outfile)
         return None
+
+    def upload_file(self, _src, _target):
+        """Upload file into data store."""
+        raise NotImplementedError()
+
+    def download_file(self, _src, _target):
+        """Download file from data store."""
+        copyfile(os.path.join(self.src_dir, _src), _target)
