@@ -4,7 +4,8 @@ from src.data_store.local_data_store import LocalDataStore
 import unittest
 import os
 from src.config import (HPF_SCORING_REGION,
-                        HPF_output_package_id_dict)
+                        HPF_output_package_id_dict,
+                        HPF_MODEL_PATH)
 
 
 class TestLocalDataStoreMethods(unittest.TestCase):
@@ -42,6 +43,12 @@ class TestLocalDataStoreMethods(unittest.TestCase):
             0].get("package_list", {})
         assert len(data) == 12405
         assert data["org.sakaiproject.kernel:sakai-kernel-util"] == 0
+
+    def test_read_pickle_file(self):
+        """Test reading a pickle file."""
+        model_filename = HPF_MODEL_PATH
+        model_obj = self.local_obj.read_pickle_file(model_filename)
+        assert str(type(model_obj)) == "<class 'hpfrec.HPF'>"
 
     def test_read_all_json_files(self):
         """Test reading all json files."""
