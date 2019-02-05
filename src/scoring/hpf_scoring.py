@@ -115,8 +115,12 @@ class HPFScoring:
         if manifest_match > 0:
             result, user_id = self.recommend_known_user(manifest_match)
         else:
-            result, user_id = self.recommend_new_user(list(input_id_set))
-        companion_recommendation = self.filter_recommendation(result, input_id_set, user_id)
+            try:
+                result, user_id = self.recommend_new_user(list(input_id_set))
+                companion_recommendation = self.filter_recommendation(result, input_id_set, user_id)
+            except ValueError as e:
+                _logger.error(e)
+                return companion_recommendation, package_topic_dict, list(missing_packages)
         return companion_recommendation, package_topic_dict, list(missing_packages)
 
     def match_manifest(self, input_id_set):  # pragma: no cover
@@ -167,7 +171,7 @@ class HPFScoring:
             recommendations = self.recommender.topN(user_id, n=self.m)
             return recommendations, user_id
 
-        return _logger.info('Unable to add user')
+        raise ValueError("Unable to add user")
 
     def filter_recommendation(self, result, input_stack, user_id):
         """Use for co-occurrence probability and for filtering of companion packages."""
@@ -177,8 +181,6 @@ class HPFScoring:
         recommendations = \
             np.array(list(itertools.compress(recommendations,
                                              [i not in package_id_set for i in recommendations])))
-
-        print("Filtered recommendation ids are: " + str(recommendations))
 
         poisson_values = self.recommender.predict(
             user=[user_id] * recommendations.size,

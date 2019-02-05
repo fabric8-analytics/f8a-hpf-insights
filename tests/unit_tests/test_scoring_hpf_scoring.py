@@ -22,6 +22,8 @@ class TestHPFScoringMethods(unittest.TestCase):
         assert self.hpf_obj.recommender is not None
         assert self.hpf_obj.m is not None
 
+    # Currently we are not moving forward with this, but in future will look
+    # on it. So commented.
     # def test_match_feedback_manifest(self):
     #     """Test match feedback manifest with dummy ids."""
     #     input_id_set = {1}
