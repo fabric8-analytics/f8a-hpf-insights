@@ -33,7 +33,7 @@ class TestFlaskMethods(unittest.TestCase):
     def test_companion_recommendations(self):
         """Test companion recommendations endpoint."""
         data = [{"ecosystem": "maven",
-                 "package_list": ["org.springframework:spring-core"]
+                 "package_list": ["org.springframework.cloud:spring-cloud-spring-service-connector"]
                  }]
         self.assertEqual(self.client.post(
             '/api/v1/companion_recommendation',
