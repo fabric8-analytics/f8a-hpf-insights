@@ -22,6 +22,11 @@ class AbstractDataStore(metaclass=abc.ABCMeta):  # pragma: no cover
         raise NotImplementedError()
 
     @abc.abstractmethod
+    def read_pickle_file(self, _filename):
+        """Read pickle file from the data source."""
+        raise NotImplementedError()
+
+    @abc.abstractmethod
     def read_all_json_files(self):
         """Read all the files from the data source."""
         raise NotImplementedError()

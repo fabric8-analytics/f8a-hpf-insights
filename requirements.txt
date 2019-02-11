@@ -28,6 +28,7 @@ jsonschema==2.6.0         # via connexion, swagger-spec-validator
 markdown==2.6.11          # via tensorflow-tensorboard
 markupsafe==1.0           # via jinja2
 numpy==1.15.0
+pandas==0.23.2
 protobuf==3.6.1           # via tensorflow, tensorflow-tensorboard
 python-dateutil==2.7.3    # via botocore
 pyyaml==3.13              # via clickclick, connexion, swagger-spec-validator
@@ -36,8 +37,6 @@ s3transfer==0.1.13        # via boto3
 scipy==1.1.0
 six==1.11.0               # via bleach, connexion, edward, flask-cors, html5lib, protobuf, python-dateutil, swagger-spec-validator, tensorflow, tensorflow-tensorboard
 swagger-spec-validator==2.3.1  # via connexion
-tensorflow-tensorboard==0.4.0  # via tensorflow
-tensorflow==1.4.1
 urllib3==1.23             # via requests
 werkzeug==0.14.1          # via flask, tensorflow-tensorboard
 wheel==0.31.1             # via tensorflow, tensorflow-tensorboard

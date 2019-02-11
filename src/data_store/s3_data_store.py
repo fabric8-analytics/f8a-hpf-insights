@@ -4,8 +4,10 @@ import json
 from collections import OrderedDict
 import os
 import boto3
+
 boto3.set_stream_logger(name='botocore')
 import botocore
+import pickle
 
 from src.config import (AWS_S3_ENDPOINT_URL)
 from src.data_store.abstract_data_store import AbstractDataStore
@@ -27,8 +29,8 @@ class S3DataStore(AbstractDataStore):  # pragma: no cover
                 signature_version='s3v4'))
         else:
             self.s3_resource = self.session.resource('s3', config=botocore.client.Config(
-                signature_version='s3v4'),
-                region_name="us-east-1", endpoint_url=AWS_S3_ENDPOINT_URL)
+                signature_version='s3v4'), region_name="us-east-1",
+                                                     endpoint_url=AWS_S3_ENDPOINT_URL)
         self.bucket = self.s3_resource.Bucket(src_bucket_name)
 
     def get_name(self):
@@ -38,6 +40,12 @@ class S3DataStore(AbstractDataStore):  # pragma: no cover
     def read_json_file(self, filename):
         """Read JSON file from the S3 bucket."""
         return json.loads(self.read_generic_file(filename), object_pairs_hook=OrderedDict)
+
+    def read_pickle_file(self, filename):
+        """Read Pandas file from the S3 bucket."""
+        obj = self.s3_resource.Object(self.bucket_name, filename).get()[
+            'Body'].read()
+        return pickle.loads(obj)
 
     def read_generic_file(self, filename):
         """Read a file from the S3 bucket."""
