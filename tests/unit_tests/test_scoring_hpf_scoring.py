@@ -2,7 +2,7 @@
 import unittest
 
 from src.flask_endpoint import app
-from src.data_store.local_data_store import LocalDataStore
+from rudra.data_store.local_data_store import LocalDataStore
 from src.scoring.hpf_scoring import HPFScoring
 
 

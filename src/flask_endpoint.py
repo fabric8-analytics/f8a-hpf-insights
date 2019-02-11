@@ -6,8 +6,8 @@ import flask
 import logging
 from flask import request, current_app
 from flask_cors import CORS
-from src.data_store.s3_data_store import S3DataStore
-from src.data_store.local_data_store import LocalDataStore
+from rudra.data_store.aws import AmazonS3
+from rudra.data_store.local_data_store import LocalDataStore
 from src.scoring.hpf_scoring import HPFScoring
 from src.utils import convert_string2bool_env
 from src.config import (AWS_S3_ACCESS_KEY_ID,
@@ -48,9 +48,10 @@ global s3_object
 
 if HPF_SCORING_REGION != "":
     if convert_string2bool_env(USE_CLOUD_SERVICES):
-        s3_object = S3DataStore(src_bucket_name=AWS_S3_BUCKET_NAME,
-                                access_key=AWS_S3_ACCESS_KEY_ID,
-                                secret_key=AWS_S3_SECRET_ACCESS_KEY)
+        s3_object = AmazonS3(bucket_name=AWS_S3_BUCKET_NAME,
+                             aws_access_key_id=AWS_S3_ACCESS_KEY_ID,
+                             aws_secret_access_key=AWS_S3_SECRET_ACCESS_KEY)
+        s3_object.connect()
         app.scoring_object = HPFScoring(datastore=s3_object)
     else:
         app.scoring_object = HPFScoring(LocalDataStore("tests/test_data"))

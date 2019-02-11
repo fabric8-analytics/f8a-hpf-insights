@@ -16,10 +16,6 @@ from src.config import (HPF_SCORING_REGION, HPF_MODEL_PATH,
 # To turn off tensorflow CPU warning
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
-# Turn off the annoying boto logs unless some error occurs
-logging.getLogger('botocore').setLevel(logging.ERROR)
-logging.getLogger('s3transfer').setLevel(logging.ERROR)
-logging.getLogger('boto3').setLevel(logging.ERROR)
 
 if current_app:  # pragma: no cover
     _logger = current_app.logger
@@ -57,7 +53,7 @@ class HPFScoring:
 
     def _load_model(self):
         """Load the model from s3."""
-        return self.datastore.read_pickle_file(HPF_MODEL_PATH)
+        return self.s3_client.read_pickle_file(HPF_MODEL_PATH)
 
     def model_details(self):
         """Return the model details size."""

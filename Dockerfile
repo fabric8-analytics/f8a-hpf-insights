@@ -7,6 +7,7 @@ RUN yum install -y epel-release &&\
     yum clean all
 
 COPY ./requirements.txt /requirements.txt
+RUN pip3 install git+https://github.com/fabric8-analytics/fabric8-analytics-rudra#egg=rudra
 RUN pip3 install -r /requirements.txt && rm /requirements.txt
 
 COPY ./src /src
