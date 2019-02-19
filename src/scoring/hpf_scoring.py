@@ -53,7 +53,7 @@ class HPFScoring:
 
     def _load_model(self):
         """Load the model from s3."""
-        return self.s3_client.read_pickle_file(HPF_MODEL_PATH)
+        return self.datastore.read_pickle_file(HPF_MODEL_PATH)
 
     def model_details(self):
         """Return the model details size."""
