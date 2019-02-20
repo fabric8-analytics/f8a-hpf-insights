@@ -33,7 +33,9 @@ objects:
       - name: AWS_S3_ENDPOINT_URL
         value: ""
       - name: AWS_S3_BUCKET_NAME
-        value: "hpf-insights"
+        value: ${S3_BUCKET_NAME}
+      - name: MODEL_VERSION
+        value: ${MODEL_VERSION}
       - name: FLASK_LOGGING_LEVEL
         value: ${FLASK_LOGGING_LEVEL}
       - name: MAX_COMPANION_REC_COUNT
@@ -187,3 +189,16 @@ parameters:
   required: true
   name: USE_FEEDBACK
   value: "False"
+
+- description: "Name of the S3 bucket to use for scoring/training"
+  displayName: S3 bucket name
+  required: true
+  name: S3_BUCKET_NAME
+  value: "hpf-insights"
+
+- description: "Model Version - Date Format YYYY-MM-DD"
+  displayName: Model Version
+  required: true
+  name: MODEL_VERSION
+  value: "2019-01-03"
+
