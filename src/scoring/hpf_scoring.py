@@ -65,14 +65,12 @@ class HPFScoring:
 
     def loadObjects(self):  # pragma: no cover
         """Load the model data from AWS S3."""
-        package_id_dict_filename = os.path.join(HPF_SCORING_REGION, HPF_output_package_id_dict)
-        self.package_id_dict = self.datastore.read_json_file(package_id_dict_filename)
+        self.package_id_dict = self.datastore.read_json_file(HPF_output_package_id_dict)
         self.id_package_dict = OrderedDict({x: n for n, x in self.package_id_dict[
             0].get("package_list", {}).items()})
         self.package_id_dict = OrderedDict(self.package_id_dict[0].get("package_list", {}))
 
-        manifest_id_dict_filename = os.path.join(HPF_SCORING_REGION, HPF_output_manifest_id_dict)
-        self.manifest_id_dict = self.datastore.read_json_file(manifest_id_dict_filename)
+        self.manifest_id_dict = self.datastore.read_json_file(HPF_output_manifest_id_dict)
         self.manifest_id_dict = OrderedDict({n: set(x) for n, x in self.manifest_id_dict[
             0].get("manifest_list", {}).items()})
 
