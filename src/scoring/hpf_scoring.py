@@ -9,8 +9,7 @@ import pandas as pd
 import numpy as np
 from flask import current_app
 
-from src.config import (HPF_SCORING_REGION, HPF_MODEL_PATH,
-                        HPF_output_manifest_id_dict,
+from src.config import (HPF_MODEL_PATH, HPF_output_manifest_id_dict,
                         HPF_output_package_id_dict, MIN_REC_CONFIDENCE)
 
 # To turn off tensorflow CPU warning
