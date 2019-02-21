@@ -35,7 +35,7 @@ objects:
       - name: AWS_S3_BUCKET_NAME
         value: ${S3_BUCKET_NAME}
       - name: MODEL_VERSION
-        value: ${MODEL_VERSION}
+        value: "${{MODEL_VERSION}}"
       - name: FLASK_LOGGING_LEVEL
         value: ${FLASK_LOGGING_LEVEL}
       - name: MAX_COMPANION_REC_COUNT
