@@ -120,6 +120,13 @@ The script named `check-bashscripts.sh` can be used to check all BASH scripts (i
 
 Please see [the following link](https://github.com/koalaman/shellcheck) for further explanation, how the ShellCheck works and which issues can be detected.
 
+#### Code coverage report
+
+Code coverage is reported via the codecov.io. The results can be seen on the following address:
+
+[code coverage report](https://codecov.io/gh/fabric8-analytics/f8a-hpf-insights)
+
+
 ## Additional links:
 * [Feedback logic](https://github.com/fabric8-analytics/f8a-hpf-insights/wiki/Feedback-Logic)
 * [Pushing Image to Docker Hub](https://ropenscilabs.github.io/r-docker-tutorial/04-Dockerhub.html)
