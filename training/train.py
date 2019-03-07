@@ -287,9 +287,10 @@ def train_model():
     """Training model."""
     s3_obj = load_S3()
     data = load_data(s3_obj)
-    LOWER_LIMIT = load_hyper_params.get('lower_limit', 13)
-    UPPER_LIMIT = load_hyper_params.get('upper_limit', 15)
-    LATENT_FACTOR = load_hyper_params.get('latent_factor', 300)
+    hyper_params = load_hyper_params()
+    LOWER_LIMIT = int(hyper_params.get('lower_limit', 13))
+    UPPER_LIMIT = int(hyper_params.get('upper_limit', 15))
+    LATENT_FACTOR = int(hyper_params.get('latent_factor', 300))
     logger.info("Lower limit {}, Upper limit {} and latent factor {} are used."
                 .format(LOWER_LIMIT, UPPER_LIMIT, LATENT_FACTOR))
     package_id_dict, manifest_id_dict = preprocess_data(data, LOWER_LIMIT, UPPER_LIMIT)
