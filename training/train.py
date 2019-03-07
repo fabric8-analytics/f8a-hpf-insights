@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 # coding: utf-8
+
+"""Training script."""
+
 import os
 import numpy as np
 import pandas as pd
@@ -227,6 +230,7 @@ def precision_recall_at_m(m, test_df, recommender, user_item_df):
 
 
 def run_recommender(train_df, latent_factor):
+    """Start the recommender."""
     recommender = hpfrec.HPF(k=latent_factor, random_seed=123,
                              allow_inconsistent_math=True, ncores=24)
     recommender.step_size = None
