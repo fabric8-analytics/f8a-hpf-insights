@@ -242,7 +242,7 @@ def run_recommender(train_df, latent_factor):
 def save_model(s3_client, recommender):
     """Save model on s3."""
     try:
-        status = s3_client.write_json_file(
+        status = s3_client.write_pickle_file(
                 os.path.join(
                     "maven",
                     DEPLOYMENT_PREFIX,
@@ -269,11 +269,43 @@ def save_hyperparams(s3_client, content_json):
         logging.error(str(exc))
 
 
+def save_dictionaries(s3_client, package_id_dict, manifest_id_dict):
+    HPF_package_id_dict = os.path.join("maven", DEPLOYMENT_PREFIX,
+                                              MODEL_VERSION, "trained-model/package_id_dict.json")
+    HPF_manifest_id_dict = os.path.join("maven", DEPLOYMENT_PREFIX,
+                                               MODEL_VERSION, "trained-model/manifest_id_dict.json")
+    if not ((s3_client.object_exists(HPF_package_id_dict)) and
+            (s3_client.object_exists(HPF_manifest_id_dict))):
+        
+            pkg_status = s3_client.write_json_file(
+                    os.path.join(
+                        "maven",
+                        DEPLOYMENT_PREFIX,
+                        MODEL_VERSION,
+                        "trained-model/package_id_dict.json"),
+                    package_id_dict)
+            mnf_status = s3_client.write_json_file(
+                    os.path.join(
+                        "maven",
+                        DEPLOYMENT_PREFIX,
+                        MODEL_VERSION,
+                        "trained-model/manifest_id_dict.json"),
+                    manifest_id_dict)
+
+            if not all([pkg_status, mnf_status]):
+                raise ValueError("Unable to store data files for scoring")
+
+            else:
+                logging.info("Data Files has been stored successfully")
+
+
 def save_obj(s3_client, trained_recommender, precision_30, recall_30,
-             precision_50, recall_50, lower_lim, upper_lim, latent_factor):
+             package_id_dict, manifest_id_dict, precision_50, recall_50, 
+             lower_lim, upper_lim, latent_factor):
     """Save the objects in s3 bucket."""
     logging.info("Trying to save the model.")
     save_model(s3_client, trained_recommender)
+    save_dictionaries(s3_client, package_id_dict, manifest_id_dict)
     contents = {
         "minimum_length_of_manifest": lower_lim,
         "maximum_length_of_manifest": upper_lim,
@@ -291,12 +323,14 @@ def train_model():
     """Training model."""
     s3_obj = load_S3()
     data = load_data(s3_obj)
-    LOWER_LIMIT = load_hyper_params.get('lower_limit', 13)
-    UPPER_LIMIT = load_hyper_params.get('upper_limit', 15)
-    LATENT_FACTOR = load_hyper_params.get('latent_factor', 300)
+    hyper_params = load_hyper_params()
+    LOWER_LIMIT = int(hyper_params.get('lower_limit', 13))
+    UPPER_LIMIT = int(hyper_params.get('upper_limit', 15))
+    LATENT_FACTOR = int(hyper_params.get('latent_factor', 300))
     logger.info("Lower limit {}, Upper limit {} and latent factor {} are used."
                 .format(LOWER_LIMIT, UPPER_LIMIT, LATENT_FACTOR))
     package_id_dict, manifest_id_dict = preprocess_data(data, LOWER_LIMIT, UPPER_LIMIT)
+
     user_item_list = make_user_item_df(manifest_id_dict, package_id_dict)
     user_item_df = pd.DataFrame(user_item_list)
     training_df, testing_df = train_test_split(user_item_df)
@@ -307,7 +341,8 @@ def train_model():
                                                           user_item_df)
     try:
         save_obj(s3_obj, trained_recommender, precision_at_30, recall_at_30,
-                 precision_at_50, recall_at_50, LOWER_LIMIT, UPPER_LIMIT, LATENT_FACTOR)
+                 package_id_dict, manifest_id_dict, precision_at_50, recall_at_50, 
+                 LOWER_LIMIT, UPPER_LIMIT, LATENT_FACTOR)
     except Exception as error:
         logger.error(error)
         raise
