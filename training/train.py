@@ -191,7 +191,7 @@ def recall_at_m(m, test_df, recommender, user_count):
         intersection_length = len(np.intersect1d(x, recommendations))
         try:
             recall.append({"recall": intersection_length / rec_l, "length": rec_l, "user": i})
-        except ZeroDivisionError as e:
+        except ZeroDivisionError:
             pass
     recall_df = pd.DataFrame(recall, index=None)
     return recall_df['recall'].mean()
@@ -207,7 +207,7 @@ def precision_at_m(m, test_df, recommender, user_count):
         intersection_length = len(np.intersect1d(x, recommendations))
         try:
             precision.append({"precision": intersection_length / _len, "length": _len, "user": i})
-        except ZeroDivisionError as e:
+        except ZeroDivisionError:
             pass
     precision_df = pd.DataFrame(precision, index=None)
     return precision_df['precision'].mean()
@@ -219,7 +219,7 @@ def precision_recall_at_m(m, test_df, recommender, user_item_df):
     try:
         precision = precision_at_m(m, test_df, recommender, user_count)
         recall = recall_at_m(m, test_df, recommender, user_count)
-    except ValueError as e:
+    except ValueError:
         pass
     logger.info("Precision {} and Recall are: {}".format(
             precision, recall))
