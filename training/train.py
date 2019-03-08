@@ -270,6 +270,7 @@ def save_hyperparams(s3_client, content_json):
 
 
 def save_dictionaries(s3_client, package_id_dict, manifest_id_dict):
+    """Saving the ditionaries for scoring"""
     HPF_package_id_dict = os.path.join("maven", DEPLOYMENT_PREFIX,
                                               MODEL_VERSION, "trained-model/package_id_dict.json")
     HPF_manifest_id_dict = os.path.join("maven", DEPLOYMENT_PREFIX,
