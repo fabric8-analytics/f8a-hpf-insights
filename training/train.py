@@ -1,4 +1,5 @@
-#!/usr/bin/env python
+"""Training code for maven insights."""
+# !/usr/bin/env python
 # coding: utf-8
 
 """Training script."""
@@ -270,38 +271,37 @@ def save_hyperparams(s3_client, content_json):
 
 
 def save_dictionaries(s3_client, package_id_dict, manifest_id_dict):
-    """Saving the ditionaries for scoring"""
+    """Save the ditionaries for scoring."""
     HPF_package_id_dict = os.path.join("maven", DEPLOYMENT_PREFIX,
-                                              MODEL_VERSION, "trained-model/package_id_dict.json")
+                                       MODEL_VERSION, "trained-model/package_id_dict.json")
     HPF_manifest_id_dict = os.path.join("maven", DEPLOYMENT_PREFIX,
-                                               MODEL_VERSION, "trained-model/manifest_id_dict.json")
+                                        MODEL_VERSION, "trained-model/manifest_id_dict.json")
     if not ((s3_client.object_exists(HPF_package_id_dict)) and
             (s3_client.object_exists(HPF_manifest_id_dict))):
-        
-            pkg_status = s3_client.write_json_file(
-                    os.path.join(
-                        "maven",
-                        DEPLOYMENT_PREFIX,
-                        MODEL_VERSION,
-                        "trained-model/package_id_dict.json"),
-                    package_id_dict)
-            mnf_status = s3_client.write_json_file(
-                    os.path.join(
-                        "maven",
-                        DEPLOYMENT_PREFIX,
-                        MODEL_VERSION,
-                        "trained-model/manifest_id_dict.json"),
-                    manifest_id_dict)
+        pkg_status = s3_client.write_json_file(
+            os.path.join(
+                "maven",
+                DEPLOYMENT_PREFIX,
+                MODEL_VERSION,
+                "trained-model/package_id_dict.json"),
+            package_id_dict)
+        mnf_status = s3_client.write_json_file(
+            os.path.join(
+                "maven",
+                DEPLOYMENT_PREFIX,
+                MODEL_VERSION,
+                "trained-model/manifest_id_dict.json"),
+            manifest_id_dict)
 
-            if not all([pkg_status, mnf_status]):
-                raise ValueError("Unable to store data files for scoring")
+        if not all([pkg_status, mnf_status]):
+            raise ValueError("Unable to store data files for scoring")
 
-            else:
-                logging.info("Data Files has been stored successfully")
+        else:
+            logging.info("Data Files has been stored successfully")
 
 
 def save_obj(s3_client, trained_recommender, precision_30, recall_30,
-             package_id_dict, manifest_id_dict, precision_50, recall_50, 
+             package_id_dict, manifest_id_dict, precision_50, recall_50,
              lower_lim, upper_lim, latent_factor):
     """Save the objects in s3 bucket."""
     logging.info("Trying to save the model.")
@@ -342,7 +342,7 @@ def train_model():
                                                           user_item_df)
     try:
         save_obj(s3_obj, trained_recommender, precision_at_30, recall_at_30,
-                 package_id_dict, manifest_id_dict, precision_at_50, recall_at_50, 
+                 package_id_dict, manifest_id_dict, precision_at_50, recall_at_50,
                  LOWER_LIMIT, UPPER_LIMIT, LATENT_FACTOR)
     except Exception as error:
         logger.error(error)
