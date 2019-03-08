@@ -1,6 +1,10 @@
 #!/bin/bash
 
+<<<<<<< HEAD
 directories="deployments src tests perf_tests PoC_code training"
+=======
+directories="deployments training src tests perf_tests PoC_code"
+>>>>>>> fix linter issue
 pass=0
 fail=0
 
