@@ -324,7 +324,7 @@ def train_model():
     """Training model."""
     s3_obj = load_S3()
     data = load_data(s3_obj)
-    hyper_params = load_hyper_params()
+    hyper_params = load_hyper_params() or {}
     LOWER_LIMIT = int(hyper_params.get('lower_limit', 13))
     UPPER_LIMIT = int(hyper_params.get('upper_limit', 15))
     LATENT_FACTOR = int(hyper_params.get('latent_factor', 300))
