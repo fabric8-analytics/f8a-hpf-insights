@@ -90,6 +90,17 @@ def generate_manifest_id_dict(manifest_list, package_id_dict):
     return manifest_id_dict
 
 
+def format_dict(package_id_dict, manifest_id_dict):
+    """Format the dictionaries."""
+    format_pkg_id_dict = {'ecosystem': 'maven',
+                          'package_list': package_id_dict
+                          }
+    format_mnf_id_dict = {'ecosystem': 'maven',
+                          'manifest_list': manifest_id_dict
+                          }
+    return format_pkg_id_dict, format_mnf_id_dict
+
+
 def preprocess_raw_data(raw_data_dict, lower_limit, upper_limit):
     """Preprocess raw data."""
     all_manifest_list = raw_data_dict.get('package_list', [])
@@ -108,8 +119,8 @@ def preprocess_raw_data(raw_data_dict, lower_limit, upper_limit):
 def preprocess_data(data_list, lower_limit, upper_limit):
     """Preprocess data."""
     if len(data_list) == 2:
-        package_dict = (data_list[0])[0].get('package_list')
-        manifest_dict = (data_list[1])[0].get('manifest_list')
+        package_dict = (data_list[0]).get('package_list')
+        manifest_dict = (data_list[1]).get('manifest_list')
         logger.info("Size of Package ID dictionary {} and Manifest ID dictionary are: {}".format(
             len(package_dict), len(manifest_dict)))
         return package_dict, manifest_dict
@@ -331,10 +342,11 @@ def train_model():
     logger.info("Lower limit {}, Upper limit {} and latent factor {} are used."
                 .format(LOWER_LIMIT, UPPER_LIMIT, LATENT_FACTOR))
     package_id_dict, manifest_id_dict = preprocess_data(data, LOWER_LIMIT, UPPER_LIMIT)
-
     user_item_list = make_user_item_df(manifest_id_dict, package_id_dict)
     user_item_df = pd.DataFrame(user_item_list)
     training_df, testing_df = train_test_split(user_item_df)
+    format_pkg_id_dict, format_mnf_id_dict = format_dict(package_id_dict, manifest_id_dict)
+    del package_id_dict, manifest_id_dict
     trained_recommender = run_recommender(training_df, LATENT_FACTOR)
     precision_at_30, recall_at_30 = precision_recall_at_m(30, testing_df, trained_recommender,
                                                           user_item_df)
@@ -342,7 +354,7 @@ def train_model():
                                                           user_item_df)
     try:
         save_obj(s3_obj, trained_recommender, precision_at_30, recall_at_30,
-                 package_id_dict, manifest_id_dict, precision_at_50, recall_at_50,
+                 format_pkg_id_dict, format_mnf_id_dict, precision_at_50, recall_at_50,
                  LOWER_LIMIT, UPPER_LIMIT, LATENT_FACTOR)
     except Exception as error:
         logger.error(error)
