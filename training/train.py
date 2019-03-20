@@ -351,7 +351,7 @@ def create_git_pr(s3_client, model_version, recall_at_30):
     # Convert the json description to string
     description = json.dumps(prev_hyperparams).replace('"', '\\"')
 
-    prev_recall = prev_hyperparams.get('recall_at_30', '0.6')
+    prev_recall = prev_hyperparams.get('recall_at_30', 0.55)
     if recall_at_30 >= prev_recall:
         try:
             # Invoke bash script to create a saas-analytics PR
