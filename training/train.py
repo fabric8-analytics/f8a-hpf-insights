@@ -11,6 +11,8 @@ import hpfrec
 from rudra.data_store.aws import AmazonS3
 from rudra.utils.helper import load_hyper_params
 import logging
+import subprocess
+import json
 
 
 # constants
@@ -20,6 +22,7 @@ AWS_S3_SECRET_ACCESS_KEY = os.environ.get("AWS_S3_SECRET_ACCESS_KEY", "")
 AWS_S3_BUCKET_NAME = os.environ.get("AWS_S3_BUCKET_NAME", "hpf-insights")
 MODEL_VERSION = os.environ.get("MODEL_VERSION", "2019-01-03")
 DEPLOYMENT_PREFIX = os.environ.get("DEPLOYMENT_PREFIX", "dev")
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 
 logging.basicConfig()
 logger = logging.getLogger()
@@ -331,6 +334,47 @@ def save_obj(s3_client, trained_recommender, precision_30, recall_30,
     save_hyperparams(s3_client, contents)
 
 
+def create_git_pr(s3_client, model_version, recall_at_30):
+    """Create a git PR automatically if recall_at_30 is higher than previous iteration."""
+    keys = [i.key for i in s3_client.list_bucket_objects(prefix='maven/' + DEPLOYMENT_PREFIX)]
+    dates = []
+    for i in keys:
+        if "intermediate-model/hyperparameters.json" in i:
+            dates.append(i.split('/')[2])
+    dates.remove(model_version)
+    previous_version = max(dates)
+    k = 'maven/{depl_prefix}/{prev_ver}/intermediate-model/hyperparameters.json'.format(
+        depl_prefix=DEPLOYMENT_PREFIX, prev_ver=previous_version
+    )
+    prev_hyperparams = s3_client.read_json_file(k)
+
+    # Convert the json description to string
+    description = json.dumps(prev_hyperparams).replace('"', '\\"')
+
+    prev_recall = prev_hyperparams.get('recall_at_30', 0.55)
+    if recall_at_30 >= prev_recall:
+        try:
+            # Invoke bash script to create a saas-analytics PR
+            t = subprocess.Popen(['sh', 'rudra/utils/github_helper.sh', 'f8a-hpf-insights.yaml',
+                                 'MODEL_VERSION', str(model_version), description],
+                                 shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            # Wait for the subprocess to get over
+            t.wait(60)
+            if t.returncode == 0:
+                logger.info("Successfully created a PR")
+        except ValueError:
+            logger.error('ERROR - Wrong number of arguments passed to subprocess')
+            raise ValueError
+        except subprocess.TimeoutExpired:
+            t.kill()
+            logger.error("ERROR - Script Timeout during PR creation")
+            raise subprocess.TimeoutExpired
+        except subprocess.SubprocessError as e:
+            logger.error('ERROR - Some unknown error happened')
+            logger.error('%r' % e)
+            raise subprocess.SubprocessError
+
+
 def train_model():
     """Training model."""
     s3_obj = load_S3()
@@ -356,6 +400,8 @@ def train_model():
         save_obj(s3_obj, trained_recommender, precision_at_30, recall_at_30,
                  format_pkg_id_dict, format_mnf_id_dict, precision_at_50, recall_at_50,
                  LOWER_LIMIT, UPPER_LIMIT, LATENT_FACTOR)
+        if GITHUB_TOKEN:
+            create_git_pr(s3_client=s3_obj, model_version=MODEL_VERSION, recall_at_30=recall_at_30)
     except Exception as error:
         logger.error(error)
         raise
