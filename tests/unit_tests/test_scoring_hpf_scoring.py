@@ -1,9 +1,11 @@
 """Test functionalities of hpf scoring."""
 import unittest
-
+from collections import OrderedDict
 from src.flask_endpoint import app
 from rudra.data_store.local_data_store import LocalDataStore
 from src.scoring.hpf_scoring import HPFScoring
+from src.config import (HPF_output_manifest_id_dict,
+                        HPF_output_package_id_dict)
 
 
 class TestHPFScoringMethods(unittest.TestCase):
@@ -15,6 +17,9 @@ class TestHPFScoringMethods(unittest.TestCase):
         self.local_obj = LocalDataStore("tests/test_data")
         self.hpf_obj = HPFScoring(self.local_obj)
         self.hpf_obj_feedback = HPFScoring(self.local_obj)
+        self.package_id_dict = OrderedDict()
+        self.id_package_dict = OrderedDict()
+        self.manifest_id_dict = OrderedDict()
 
     def test_basic_object(self):
         """Test basic HPF object."""
@@ -35,6 +40,19 @@ class TestHPFScoringMethods(unittest.TestCase):
     #     id_ = self.hpf_obj.match_feedback_manifest(input_id_set)
     #     assert int(id_) == -1
 
+    def test_load_objects(self):
+        """Test logic where incoming data is correct or not."""
+        self.package_id_dict = self.local_obj.read_json_file(HPF_output_package_id_dict)
+        self.id_package_dict = OrderedDict({x: n for n, x in self.package_id_dict.get
+                                            ("package_list", {}).items()})
+        self.package_id_dict = OrderedDict(self.package_id_dict.get("package_list", {}))
+        self.manifest_id_dict = self.local_obj.read_json_file(HPF_output_manifest_id_dict)
+        self.manifest_id_dict = OrderedDict({n: set(x) for n, x in self.manifest_id_dict.get
+                                            ("manifest_list", {}).items()})
+        self.assertTrue(isinstance(self.package_id_dict, dict))
+        self.assertTrue(isinstance(self.id_package_dict, dict))
+        self.assertTrue(isinstance(self.manifest_id_dict, dict))
+
     def test_recommend_known_user(self):
         """Test logic where we recommend for a known user(exists in training set)."""
         recommendation, user_id = self.hpf_obj.recommend_known_user(
@@ -54,10 +72,6 @@ class TestHPFScoringMethods(unittest.TestCase):
             recommendation = self.hpf_obj.predict(['missing-pkg'])
             self.assertFalse(recommendation[0])
             self.assertTrue(recommendation[2])
-
-    # def test_package_labelling(self):
-    #     labeled_package = self.hpf_obj.package_labelling([0])[0]
-    #     assert str(labeled_package) == 'com.facebook.presto:presto-spi'
 
     def test_model_details(self):
         """Test the basic model details function."""
