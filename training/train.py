@@ -34,13 +34,12 @@ def load_S3():
     s3_object = AmazonS3(bucket_name=AWS_S3_BUCKET_NAME,
                          aws_access_key_id=AWS_S3_ACCESS_KEY_ID,
                          aws_secret_access_key=AWS_S3_SECRET_ACCESS_KEY)
-    try:
-        s3_object.connect()
+    s3_object.connect()
+    if s3_object.is_connected():
         logger.info("S3 connection established.")
         return s3_object
-    except Exception as error:
-        logger.error(error)
-        raise
+    else:
+        raise Exception
 
 
 def load_data(s3_client):
@@ -104,16 +103,25 @@ def format_dict(package_id_dict, manifest_id_dict):
     return format_pkg_id_dict, format_mnf_id_dict
 
 
+def find_unique_manifest(package_lst):
+    """Find uniques manifests from raw data."""
+    nested_tuples = [tuple(i) for i in package_lst]
+    unique_tuples = list(set(nested_tuples))
+    unique_manifests = [list(i) for i in unique_tuples]
+    return unique_manifests
+
+
 def preprocess_raw_data(raw_data_dict, lower_limit, upper_limit):
     """Preprocess raw data."""
     all_manifest_list = raw_data_dict.get('package_list', [])
+    unique_manifests = find_unique_manifest(all_manifest_list)
     logger.info("Number of manifests collected = {}".format(
-        len(all_manifest_list)))
+        len(unique_manifests)))
     trimmed_manifest_list = [
-        manifest for manifest in all_manifest_list if lower_limit < len(manifest) < upper_limit]
+        manifest for manifest in unique_manifests if lower_limit < len(manifest) < upper_limit]
     logger.info("Number of trimmed manifest = {}". format(
         len(trimmed_manifest_list)))
-    del all_manifest_list
+    del all_manifest_list, unique_manifests
     package_id_dict = generate_package_id_dict(trimmed_manifest_list)
     manifest_id_dict = generate_manifest_id_dict(trimmed_manifest_list, package_id_dict)
     return package_id_dict, manifest_id_dict

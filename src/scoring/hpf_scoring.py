@@ -1,20 +1,14 @@
 """The HPF Model scoring class."""
 
 import logging
-import os
 import itertools
 from collections import OrderedDict
 from sys import getsizeof
 import pandas as pd
 import numpy as np
 from flask import current_app
-
 from src.config import (HPF_MODEL_PATH, HPF_output_manifest_id_dict,
                         HPF_output_package_id_dict, MIN_REC_CONFIDENCE)
-
-# To turn off tensorflow CPU warning
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-
 
 if current_app:  # pragma: no cover
     _logger = current_app.logger
@@ -65,13 +59,13 @@ class HPFScoring:
     def loadObjects(self):  # pragma: no cover
         """Load the model data from AWS S3."""
         self.package_id_dict = self.datastore.read_json_file(HPF_output_package_id_dict)
-        self.id_package_dict = OrderedDict({x: n for n, x in self.package_id_dict[
-            0].get("package_list", {}).items()})
-        self.package_id_dict = OrderedDict(self.package_id_dict[0].get("package_list", {}))
+        self.id_package_dict = OrderedDict({x: n for n, x in self.package_id_dict.get
+                                            ("package_list", {}).items()})
+        self.package_id_dict = OrderedDict(self.package_id_dict.get("package_list", {}))
 
         self.manifest_id_dict = self.datastore.read_json_file(HPF_output_manifest_id_dict)
-        self.manifest_id_dict = OrderedDict({n: set(x) for n, x in self.manifest_id_dict[
-            0].get("manifest_list", {}).items()})
+        self.manifest_id_dict = OrderedDict({n: set(x) for n, x in self.manifest_id_dict.get
+                                            ("manifest_list", {}).items()})
 
     def predict(self, input_stack):
         """Prediction function.
@@ -158,9 +152,9 @@ class HPFScoring:
             'ItemId': input_id_set,
             'Count': [1] * len(input_id_set)})
         user_id = self.recommender.nusers
+        _logger.debug("Recommending for new user: {}".format(user_id))
         is_user_added = self.recommender.add_user(user_id=user_id, counts_df=new_df)
         if is_user_added:
-            user_id -= 1
             recommendations = self.recommender.topN(user_id, n=self.m)
             return recommendations, user_id
 
