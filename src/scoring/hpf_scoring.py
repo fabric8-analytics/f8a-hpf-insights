@@ -101,6 +101,7 @@ class HPFScoring:
         manifest_match = self.match_manifest(input_id_set)
         if manifest_match > 0:
             result, user_id = self.recommend_known_user(manifest_match)
+            companion_recommendation = self.filter_recommendation(result, input_id_set, user_id)
         else:
             try:
                 result, user_id = self.recommend_new_user(list(input_id_set))
