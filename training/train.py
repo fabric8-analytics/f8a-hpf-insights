@@ -44,25 +44,13 @@ def load_S3():
 
 def load_data(s3_client):
     """Load data from s3 bucket."""
-    HPF_output_package_id_dict = os.path.join("maven", DEPLOYMENT_PREFIX,
-                                              MODEL_VERSION, "trained-model/package_id_dict.json")
-    HPF_output_manifest_id_dict = os.path.join("maven", DEPLOYMENT_PREFIX,
-                                               MODEL_VERSION, "trained-model/manifest_id_dict.json")
-    if ((s3_client.object_exists(HPF_output_package_id_dict)) and
-            (s3_client.object_exists(HPF_output_manifest_id_dict))):
-        package_id_dict_ = s3_client.read_json_file(HPF_output_package_id_dict)
-        manifest_id_dict_ = s3_client.read_json_file(HPF_output_manifest_id_dict)
-        return [package_id_dict_, manifest_id_dict_]
-    else:
-        try:
-            HPF_output_raw_dict = os.path.join("maven", DEPLOYMENT_PREFIX,
-                                               MODEL_VERSION, "data/manifest.json")
-            raw_data_dict_ = s3_client.read_json_file(HPF_output_raw_dict)
-            logger.info("Size of Raw Manifest file is: {}".format(len(raw_data_dict_)))
-            return [raw_data_dict_]
-        except Exception as error:
-            logger.error(error)
-            raise
+    HPF_output_raw_dict = os.path.join("maven", DEPLOYMENT_PREFIX,
+                                       MODEL_VERSION, "data/manifest.json")
+    raw_data_dict_ = s3_client.read_json_file(HPF_output_raw_dict)
+    if raw_data_dict_ is None:
+        raise Exception("manifest.json not found")
+    logger.info("Size of Raw Manifest file is: {}".format(len(raw_data_dict_)))
+    return raw_data_dict_
 
 
 def generate_package_id_dict(manifest_list):
@@ -113,7 +101,8 @@ def find_unique_manifest(package_lst):
 
 def preprocess_raw_data(raw_data_dict, lower_limit, upper_limit):
     """Preprocess raw data."""
-    all_manifest_list = raw_data_dict.get('package_list', [])
+    all_manifest_list = raw_data_dict.get('user_input_stack', []) + \
+        raw_data_dict.get('bigquery_data', [])
     unique_manifests = find_unique_manifest(all_manifest_list)
     logger.info("Number of manifests collected = {}".format(
         len(unique_manifests)))
@@ -127,28 +116,14 @@ def preprocess_raw_data(raw_data_dict, lower_limit, upper_limit):
     return package_id_dict, manifest_id_dict
 
 
-def preprocess_data(data_list, lower_limit, upper_limit):
-    """Preprocess data."""
-    if len(data_list) == 2:
-        package_dict = (data_list[0]).get('package_list')
-        manifest_dict = (data_list[1]).get('manifest_list')
-        logger.info("Size of Package ID dictionary {} and Manifest ID dictionary are: {}".format(
-            len(package_dict), len(manifest_dict)))
-        return package_dict, manifest_dict
-    else:
-        raw_data = data_list[0]
-        package_dict, manifest_dict = preprocess_raw_data(raw_data, lower_limit, upper_limit)
-        logger.info("Size of Package ID dictionary {} and Manifest ID dictionary are: {}".format(
-            len(package_dict), len(manifest_dict)))
-        return package_dict, manifest_dict
-
-
-def make_user_item_df(manifest_dict, package_dict):
+def make_user_item_df(manifest_dict, package_dict, user_input_stacks):
     """Make user item dataframe."""
     user_item_list = []
+    set_input_stacks = {frozenset(x) for x in user_input_stacks}
     id_package_dict = {v: k for k, v in package_dict.items()}
     for k, v in manifest_dict.items():
         user_id = int(k)
+        is_user_input_stack = v in set_input_stacks
         for package in v:
             if package in id_package_dict:
                 item_id = package
@@ -156,7 +131,8 @@ def make_user_item_df(manifest_dict, package_dict):
                     {
                         "UserId": user_id,
                         "ItemId": item_id,
-                        "Count": 1
+                        "Count": 1,
+                        "is_user_input_stack": is_user_input_stack
                     }
                 )
     return user_item_list
@@ -164,17 +140,22 @@ def make_user_item_df(manifest_dict, package_dict):
 
 def train_test_split(data_df):
     """Split for training and testing."""
-    data_df = data_df.sample(frac=1)
-    df_user = data_df.drop_duplicates(['UserId'])
-    data_df = data_df.sample(frac=1)
-    df_item = data_df.drop_duplicates(['ItemId'])
+    user_input_df = data_df.loc[data_df['is_user_input_stack']]
+    user_input_df = user_input_df.sample(frac=1)
+    df_user = user_input_df.drop_duplicates(['UserId'])
+    user_input_df = user_input_df.sample(frac=1)
+    df_item = user_input_df.drop_duplicates(['ItemId'])
     train_df = pd.concat([df_user, df_item]).drop_duplicates()
-    fraction = round(frac(data_df, train_df), 2)
+    fraction = round(frac(user_input_df, train_df), 2)
 
     if fraction < 0.80:
-        df_ = extra_df(fraction, data_df, train_df)
+        df_ = extra_df(fraction, user_input_df, train_df)
         train_df = pd.concat([train_df, df_])
-    test_df = pd.concat([data_df, train_df]).drop_duplicates(keep=False)
+    test_df = pd.concat([user_input_df, train_df]).drop_duplicates(keep=False)
+    test_df = test_df.drop(columns=['is_user_input_stack'])
+    data_df = data_df.loc[~data_df['is_user_input_stack']]
+    train_df = pd.concat([data_df, train_df])
+    train_df = train_df.drop(columns=['is_user_input_stack'])
     logger.info("Size of Training DF {} and Testing DF are: {}".format(
             len(train_df), len(test_df)))
     return train_df, test_df
@@ -393,8 +374,11 @@ def train_model():
     LATENT_FACTOR = int(hyper_params.get('latent_factor', 300))
     logger.info("Lower limit {}, Upper limit {} and latent factor {} are used."
                 .format(LOWER_LIMIT, UPPER_LIMIT, LATENT_FACTOR))
-    package_id_dict, manifest_id_dict = preprocess_data(data, LOWER_LIMIT, UPPER_LIMIT)
-    user_item_list = make_user_item_df(manifest_id_dict, package_id_dict)
+    package_id_dict, manifest_id_dict = preprocess_raw_data(
+        data.get('package_dict', {}), LOWER_LIMIT, UPPER_LIMIT)
+    user_input_stacks = data.get('package_dict', {}).\
+        get('user_input_stack', [])
+    user_item_list = make_user_item_df(manifest_id_dict, package_id_dict, user_input_stacks)
     user_item_df = pd.DataFrame(user_item_list)
     training_df, testing_df = train_test_split(user_item_df)
     format_pkg_id_dict, format_mnf_id_dict = format_dict(package_id_dict, manifest_id_dict)
