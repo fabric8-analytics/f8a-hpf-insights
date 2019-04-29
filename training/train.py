@@ -275,20 +275,14 @@ def save_hyperparams(s3_client, content_json):
 
 def save_dictionaries(s3_client, package_id_dict, manifest_id_dict):
     """Save the ditionaries for scoring."""
-    HPF_package_id_dict = os.path.join("maven", DEPLOYMENT_PREFIX,
-                                       MODEL_VERSION, "trained-model/package_id_dict.json")
-    HPF_manifest_id_dict = os.path.join("maven", DEPLOYMENT_PREFIX,
-                                        MODEL_VERSION, "trained-model/manifest_id_dict.json")
-    if not ((s3_client.object_exists(HPF_package_id_dict)) and
-            (s3_client.object_exists(HPF_manifest_id_dict))):
-        pkg_status = s3_client.write_json_file(
+    pkg_status = s3_client.write_json_file(
             os.path.join(
                 "maven",
                 DEPLOYMENT_PREFIX,
                 MODEL_VERSION,
                 "trained-model/package_id_dict.json"),
             package_id_dict)
-        mnf_status = s3_client.write_json_file(
+    mnf_status = s3_client.write_json_file(
             os.path.join(
                 "maven",
                 DEPLOYMENT_PREFIX,
@@ -296,11 +290,11 @@ def save_dictionaries(s3_client, package_id_dict, manifest_id_dict):
                 "trained-model/manifest_id_dict.json"),
             manifest_id_dict)
 
-        if not all([pkg_status, mnf_status]):
-            raise ValueError("Unable to store data files for scoring")
+    if not all([pkg_status, mnf_status]):
+        raise ValueError("Unable to store data files for scoring")
 
-        else:
-            logging.info("Data Files has been stored successfully")
+    else:
+        logging.info("Data Files has been stored successfully")
 
 
 def save_obj(s3_client, trained_recommender, precision_30, recall_30,
