@@ -123,7 +123,7 @@ def make_user_item_df(manifest_dict, package_dict, user_input_stacks):
     id_package_dict = {v: k for k, v in package_dict.items()}
     for k, v in manifest_dict.items():
         user_id = int(k)
-        is_user_input_stack = v in set_input_stacks
+        is_user_input_stack = frozenset(v) in set_input_stacks
         for package in v:
             if package in id_package_dict:
                 item_id = package
