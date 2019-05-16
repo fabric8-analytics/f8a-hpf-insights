@@ -119,7 +119,10 @@ def preprocess_raw_data(raw_data_dict, lower_limit, upper_limit):
 def make_user_item_df(manifest_dict, package_dict, user_input_stacks):
     """Make user item dataframe."""
     user_item_list = []
-    set_input_stacks = {frozenset(x) for x in user_input_stacks}
+    set_input_stacks = set()
+    for stack in user_input_stacks:
+        set_input_stacks.add(frozenset([package_dict.get(package)
+                                        for package in stack]))
     id_package_dict = {v: k for k, v in package_dict.items()}
     for k, v in manifest_dict.items():
         user_id = int(k)
@@ -141,16 +144,18 @@ def make_user_item_df(manifest_dict, package_dict, user_input_stacks):
 def train_test_split(data_df):
     """Split for training and testing."""
     user_input_df = data_df.loc[data_df['is_user_input_stack']]
+    logger.info("Size of user input df is: {}".format(len(user_input_df)))
     user_input_df = user_input_df.sample(frac=1)
     df_user = user_input_df.drop_duplicates(['UserId'])
     user_input_df = user_input_df.sample(frac=1)
     df_item = user_input_df.drop_duplicates(['ItemId'])
     train_df = pd.concat([df_user, df_item]).drop_duplicates()
     fraction = round(frac(user_input_df, train_df), 2)
-
+    logger.info("Fraction value is: {}".format(fraction))
     if fraction < 0.80:
         df_ = extra_df(fraction, user_input_df, train_df)
         train_df = pd.concat([train_df, df_])
+    logger.info("Size of training df is {}".format(len(train_df)))
     test_df = pd.concat([user_input_df, train_df]).drop_duplicates(keep=False)
     test_df = test_df.drop(columns=['is_user_input_stack'])
     data_df = data_df.loc[~data_df['is_user_input_stack']]
@@ -180,8 +185,10 @@ def frac(data_df, train_df):
 def extra_df(frac, data_df, train_df):
     """Calculate extra dataframe."""
     remain_frac = float("%.2f" % (0.80 - frac))
+    logger.info("Remaining fraction is: {}".format(remain_frac))
     len_df = len(data_df.index)
     no_rows = round(remain_frac * len_df)
+    logger.info("Number of rows is : {}".format(no_rows))
     df_remain = pd.concat([data_df, train_df]).drop_duplicates(keep=False)
     df_remain_rand = df_remain.sample(frac=1)
     return df_remain_rand[:no_rows]
