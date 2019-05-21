@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-directories="src deployments tests training perf_tests PoC_code"
+directories="src deployments tests training perf_tests PoC_code tools"
 pass=0
 fail=0
 
