@@ -13,6 +13,7 @@ RUN pip3 install git+https://github.com/fabric8-analytics/fabric8-analytics-rudr
 RUN pip3 install -r /requirements.txt && rm /requirements.txt
 
 COPY ./src /src
+COPY ./tools /tools
 COPY ./tests/test_data /tests/test_data
 COPY ./src/config.py.template /src/config.py
 
