@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 
+check_python_version() {
+    python3 /tools/check_python_version.py 3 6
+}
+
 locale charmap
+
+check_python_version
 
 export RADONFILESENCODING=UTF-8
 

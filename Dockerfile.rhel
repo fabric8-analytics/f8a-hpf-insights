@@ -10,6 +10,7 @@ RUN pip3 install -r /requirements.txt && rm /requirements.txt
 RUN pip3 install Cython==0.29.1 && pip3 install hpfrec==0.2.2.9
 
 COPY ./src /src
+COPY ./tools /tools
 COPY ./tests/test_data /tests/test_data
 COPY ./src/config.py.template /src/config.py
 
