@@ -19,9 +19,11 @@ import json
 
 AWS_S3_ACCESS_KEY_ID = os.environ.get("AWS_S3_ACCESS_KEY_ID", "")
 AWS_S3_SECRET_ACCESS_KEY = os.environ.get("AWS_S3_SECRET_ACCESS_KEY", "")
-AWS_S3_BUCKET_NAME = os.environ.get("AWS_S3_BUCKET_NAME", "hpf-insights")
-MODEL_VERSION = os.environ.get("MODEL_VERSION", "2019-01-03")
 DEPLOYMENT_PREFIX = os.environ.get("DEPLOYMENT_PREFIX", "dev")
+DEPLOYMENT_PREFIX = DEPLOYMENT_PREFIX.lower()
+AWS_S3_BUCKET_NAME = DEPLOYMENT_PREFIX + '-' + \
+    os.environ.get("AWS_S3_BUCKET_NAME", "hpf-maven-insights")
+MODEL_VERSION = os.environ.get("MODEL_VERSION", "2019-01-03")
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 
 logging.basicConfig()
@@ -44,8 +46,7 @@ def load_S3():
 
 def load_data(s3_client):
     """Load data from s3 bucket."""
-    HPF_output_raw_dict = os.path.join("maven", DEPLOYMENT_PREFIX,
-                                       MODEL_VERSION, "data/manifest.json")
+    HPF_output_raw_dict = os.path.join(MODEL_VERSION, "data/manifest.json")
     raw_data_dict_ = s3_client.read_json_file(HPF_output_raw_dict)
     if raw_data_dict_ is None:
         raise Exception("manifest.json not found")
@@ -255,8 +256,6 @@ def save_model(s3_client, recommender):
     try:
         status = s3_client.write_pickle_file(
                 os.path.join(
-                    "maven",
-                    DEPLOYMENT_PREFIX,
                     MODEL_VERSION,
                     "intermediate-model/hpf_model.pkl"),
                 recommender)
@@ -270,8 +269,6 @@ def save_hyperparams(s3_client, content_json):
     try:
         status = s3_client.write_json_file(
                 os.path.join(
-                    "maven",
-                    DEPLOYMENT_PREFIX,
                     MODEL_VERSION,
                     "intermediate-model/hyperparameters.json"),
                 content_json)
@@ -284,15 +281,11 @@ def save_dictionaries(s3_client, package_id_dict, manifest_id_dict):
     """Save the ditionaries for scoring."""
     pkg_status = s3_client.write_json_file(
             os.path.join(
-                "maven",
-                DEPLOYMENT_PREFIX,
                 MODEL_VERSION,
                 "trained-model/package_id_dict.json"),
             package_id_dict)
     mnf_status = s3_client.write_json_file(
             os.path.join(
-                "maven",
-                DEPLOYMENT_PREFIX,
                 MODEL_VERSION,
                 "trained-model/manifest_id_dict.json"),
             manifest_id_dict)
@@ -326,16 +319,14 @@ def save_obj(s3_client, trained_recommender, precision_30, recall_30,
 
 def create_git_pr(s3_client, model_version, recall_at_30):
     """Create a git PR automatically if recall_at_30 is higher than previous iteration."""
-    keys = [i.key for i in s3_client.list_bucket_objects(prefix='maven/' + DEPLOYMENT_PREFIX)]
+    keys = [i.key for i in s3_client.list_bucket_objects()]
     dates = []
     for i in keys:
         if "intermediate-model/hyperparameters.json" in i:
             dates.append(i.split('/')[2])
     dates.remove(model_version)
     previous_version = max(dates)
-    k = 'maven/{depl_prefix}/{prev_ver}/intermediate-model/hyperparameters.json'.format(
-        depl_prefix=DEPLOYMENT_PREFIX, prev_ver=previous_version
-    )
+    k = '{prev_ver}/intermediate-model/hyperparameters.json'.format(prev_ver=previous_version)
     prev_hyperparams = s3_client.read_json_file(k)
 
     # Convert the json description to string

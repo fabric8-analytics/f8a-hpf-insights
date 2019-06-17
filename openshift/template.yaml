@@ -194,7 +194,7 @@ parameters:
   displayName: S3 bucket name
   required: true
   name: S3_BUCKET_NAME
-  value: "hpf-insights"
+  value: "hpf-maven-insights"
 
 - description: "Model Version - Date Format YYYY-MM-DD"
   displayName: Model Version
