@@ -33,7 +33,10 @@ objects:
       - name: AWS_S3_ENDPOINT_URL
         value: ""
       - name: AWS_S3_BUCKET_NAME
-        value: ${S3_BUCKET_NAME}
+        valueFrom:
+          secretKeyRef:
+            key: hpf-maven-insights-s3
+            name: bucket
       - name: MODEL_VERSION
         value: "${{MODEL_VERSION}}"
       - name: FLASK_LOGGING_LEVEL
@@ -189,12 +192,6 @@ parameters:
   required: true
   name: USE_FEEDBACK
   value: "False"
-
-- description: "Name of the S3 bucket to use for scoring/training"
-  displayName: S3 bucket name
-  required: true
-  name: S3_BUCKET_NAME
-  value: "hpf-maven-insights"
 
 - description: "Model Version - Date Format YYYY-MM-DD"
   displayName: Model Version

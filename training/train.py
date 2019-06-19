@@ -20,9 +20,7 @@ import json
 AWS_S3_ACCESS_KEY_ID = os.environ.get("AWS_S3_ACCESS_KEY_ID", "")
 AWS_S3_SECRET_ACCESS_KEY = os.environ.get("AWS_S3_SECRET_ACCESS_KEY", "")
 DEPLOYMENT_PREFIX = os.environ.get("DEPLOYMENT_PREFIX", "dev")
-DEPLOYMENT_PREFIX = DEPLOYMENT_PREFIX.lower()
-AWS_S3_BUCKET_NAME = DEPLOYMENT_PREFIX + '-' + \
-    os.environ.get("AWS_S3_BUCKET_NAME", "hpf-maven-insights")
+AWS_S3_BUCKET_NAME = os.environ.get("AWS_S3_BUCKET_NAME", "")
 MODEL_VERSION = os.environ.get("MODEL_VERSION", "2019-01-03")
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 

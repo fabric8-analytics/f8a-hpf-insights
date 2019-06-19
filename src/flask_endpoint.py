@@ -15,8 +15,7 @@ from src.config import (AWS_S3_ACCESS_KEY_ID,
                         AWS_S3_BUCKET_NAME,
                         HPF_SCORING_REGION,
                         USE_CLOUD_SERVICES,
-                        SWAGGER_YAML_PATH,
-                        DEPLOYMENT_PREFIX)
+                        SWAGGER_YAML_PATH)
 
 # Turn off the annoying boto logs unless some error occurs
 logging.getLogger('botocore').setLevel(logging.ERROR)
@@ -49,7 +48,6 @@ global s3_object
 
 if HPF_SCORING_REGION != "":
     if convert_string2bool_env(USE_CLOUD_SERVICES):
-        AWS_S3_BUCKET_NAME = DEPLOYMENT_PREFIX + '-' + AWS_S3_BUCKET_NAME
         s3_object = AmazonS3(bucket_name=AWS_S3_BUCKET_NAME,
                              aws_access_key_id=AWS_S3_ACCESS_KEY_ID,
                              aws_secret_access_key=AWS_S3_SECRET_ACCESS_KEY)
