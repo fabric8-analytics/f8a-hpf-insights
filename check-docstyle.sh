@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 
-directories="src deployments tests training perf_tests PoC_code tools"
+IFS=$'\n'
+
+# list of directories with sources to check
+directories=$(cat directories.txt)
+
 pass=0
 fail=0
 
