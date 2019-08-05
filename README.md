@@ -5,7 +5,7 @@ HPF Matrix Factorizations for companion recommendation.
 *HPF- Hierarchical Poisson Factorization*
 
 ## Index:
-* [Supported Ecosytems](#supported-ecosytems)
+* [Supported Ecosystems](#supported-ecosystems)
 * [Build Upon](#build-upon)
 * [Deploy Locally](#to-run-locally-via-docker-compose)
 * [Deploy on DevCluster](#to-run-on-dev-cluster)
@@ -24,7 +24,7 @@ HPF Matrix Factorizations for companion recommendation.
 
 ## To run locally via docker-compose:
 
-* Setup Minio and start Minio server so that `hpf-insights` is loaded as a folder inside it upon running. To use AWS S3 instead of Minio add your AWS S3 credentials in the next step instead of Miino credentials.
+* Setup Minio and start Minio server so that `hpf-insights` is loaded as a folder inside it upon running. To use AWS S3 instead of Minio add your AWS S3 credentials in the next step instead of Minio credentials.
 * Create a `.env` file and add credentials to it.
 * In the `.env` set the `AWS_S3_ENDPOINT_URL` to `<blank>` for using AWS S3 and to `http://ip:port` for using Minio.
 * `source .env`
@@ -60,6 +60,60 @@ Usage:
 
 ## Footnotes:
 
+#### Check for all possible issues
+
+The script named `check-all.sh` is to be used to check the sources for all detectable errors and issues. This script can be run w/o any arguments:
+
+```
+./check-all.sh
+```
+
+Expected script output:
+
+```
+Running all tests and checkers
+  Check all BASH scripts
+    OK
+  Check documentation strings in all Python source file
+    OK
+  Detect common errors in all Python source file
+    OK
+  Detect dead code in all Python source file
+    OK
+  Run Python linter for Python source file
+    OK
+  Unit tests for this project
+    OK
+Done
+
+Overall result
+  OK
+```
+
+An example of script output when one error is detected:
+
+```
+Running all tests and checkers
+  Check all BASH scripts
+    Error: please look into files check-bashscripts.log and check-bashscripts.err for possible causes
+  Check documentation strings in all Python source file
+    OK
+  Detect common errors in all Python source file
+    OK
+  Detect dead code in all Python source file
+    OK
+  Run Python linter for Python source file
+    OK
+  Unit tests for this project
+    OK
+Done
+
+Overal result
+  One error detected!
+```
+
+Please note that the script creates bunch of `*.log` and `*.err` files that are temporary and won't be commited into the project repository.
+
 #### Coding standards:
 
 - You can use scripts `run-linter.sh` and `check-docstyle.sh` to check if the code follows [PEP 8](https://www.python.org/dev/peps/pep-0008/) and [PEP 257](https://www.python.org/dev/peps/pep-0257/) coding standards. These scripts can be run w/o any arguments:
@@ -70,15 +124,21 @@ Usage:
 ```
 
 The first script checks the indentation, line lengths, variable names, whitespace around operators etc. The second
-script checks all documentation strings - its presense and format. Please fix any warnings and errors reported by these
+script checks all documentation strings - its presence and format. Please fix any warnings and errors reported by these
 scripts.
 
-#### Code complexity measurement:
+List of directories containing source code, that needs to be checked, are stored in a file `directories.txt`
+
+#### Code complexity measurement
 
 The scripts `measure-cyclomatic-complexity.sh` and `measure-maintainability-index.sh` are used to measure code complexity. These scripts can be run w/o any arguments:
 
 ```
 ./measure-cyclomatic-complexity.sh
+```
+and:
+
+```
 ./measure-maintainability-index.sh
 ```
 
@@ -100,6 +160,8 @@ Please note that due to Python's dynamic nature, static code analyzers are likel
 
 Because of this potential problems, only code detected with more than 90% of confidence is reported.
 
+List of directories containing source code, that needs to be checked, are stored in a file `directories.txt`
+
 #### Common issues detection
 
 The script `detect-common-errors.sh` can be used to detect common errors in the repository. This script can be run w/o any arguments:
@@ -110,15 +172,24 @@ The script `detect-common-errors.sh` can be used to detect common errors in the 
 
 Please note that only semantical problems are reported.
 
+List of directories containing source code, that needs to be checked, are stored in a file `directories.txt`
+
 #### Check for scripts written in BASH
 
-The script named `check-bashscripts.sh` can be used to check all BASH scripts (in fact: all files with the `.sh` extension) for various possible issues, incompatibilies, and caveats. This script can be run w/o any arguments:
+The script named `check-bashscripts.sh` can be used to check all BASH scripts (in fact: all files with the `.sh` extension) for various possible issues, incompatibilities, and caveats. This script can be run w/o any arguments:
 
 ```
 ./check-bashscripts.sh
 ```
 
 Please see [the following link](https://github.com/koalaman/shellcheck) for further explanation, how the ShellCheck works and which issues can be detected.
+
+#### Code coverage report
+
+Code coverage is reported via the codecov.io. The results can be seen on the following address:
+
+[code coverage report](https://codecov.io/gh/fabric8-analytics/f8a-hpf-insights)
+
 
 ## Additional links:
 * [Feedback logic](https://github.com/fabric8-analytics/f8a-hpf-insights/wiki/Feedback-Logic)

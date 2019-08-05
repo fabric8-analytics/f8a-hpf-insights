@@ -113,3 +113,7 @@ secret.yaml
 README.html
 html/
 latex/
+
+.DS_Store
+*.log
+*.err

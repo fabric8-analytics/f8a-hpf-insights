@@ -33,7 +33,12 @@ objects:
       - name: AWS_S3_ENDPOINT_URL
         value: ""
       - name: AWS_S3_BUCKET_NAME
-        value: "hpf-insights"
+        valueFrom:
+          secretKeyRef:
+            key: bucket
+            name: hpf-maven-insights-s3
+      - name: MODEL_VERSION
+        value: "${{MODEL_VERSION}}"
       - name: FLASK_LOGGING_LEVEL
         value: ${FLASK_LOGGING_LEVEL}
       - name: MAX_COMPANION_REC_COUNT
@@ -50,13 +55,13 @@ objects:
       - name: AWS_S3_ACCESS_KEY_ID
         valueFrom:
           secretKeyRef:
-            key: s3-access-key-id
-            name: aws
+            key: aws-access-key-id
+            name: hpf-maven-insights-s3
       - name: AWS_S3_SECRET_ACCESS_KEY
         valueFrom:
           secretKeyRef:
-            key: s3-secret-access-key
-            name: aws
+            key: aws-secret-access-key
+            name: hpf-maven-insights-s3
       name: f8a-hpf-insights
       image: "${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${IMAGE_TAG}"
       imagePullPolicy: Always
@@ -187,3 +192,10 @@ parameters:
   required: true
   name: USE_FEEDBACK
   value: "False"
+
+- description: "Model Version - Date Format YYYY-MM-DD"
+  displayName: Model Version
+  required: true
+  name: MODEL_VERSION
+  value: "2019-01-03"
+
