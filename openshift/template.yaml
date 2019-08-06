@@ -30,8 +30,6 @@ objects:
         value: "900"
       - name: HPF_SCORING_REGION
         value: "${HPF_SCORING_REGION}"
-      - name: AWS_S3_ENDPOINT_URL
-        value: ""
       - name: AWS_S3_BUCKET_NAME
         valueFrom:
           secretKeyRef:
