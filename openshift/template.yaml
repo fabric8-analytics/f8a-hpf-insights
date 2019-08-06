@@ -49,16 +49,15 @@ objects:
         value: "${{USE_CLOUD_SERVICES}}"
       - name: USE_FEEDBACK
         value: "${{USE_FEEDBACK}}"
-
       - name: AWS_S3_ACCESS_KEY_ID
         valueFrom:
           secretKeyRef:
-            key: aws-access-key-id
+            key: aws_access_key_id
             name: hpf-maven-insights-s3
       - name: AWS_S3_SECRET_ACCESS_KEY
         valueFrom:
           secretKeyRef:
-            key: aws-secret-access-key
+            key: aws_secret_access_key
             name: hpf-maven-insights-s3
       name: f8a-hpf-insights
       image: "${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${IMAGE_TAG}"
