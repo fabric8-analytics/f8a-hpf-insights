@@ -1,4 +1,4 @@
-# f8a-hpf-insights
+# f8a-hpf-insights (maven)
 **(fabric8-analytics-hpf-insights)**
 
 HPF Matrix Factorizations for companion recommendation.
