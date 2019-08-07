@@ -16,16 +16,15 @@ USE_CLOUD_SERVICES = os.environ.get("USE_CLOUD_SERVICES", "False")
 HPF_SCORING_REGION = os.environ.get("HPF_SCORING_REGION", "maven")
 MIN_REC_CONFIDENCE = float(os.environ.get("MIN_REC_CONFIDENCE", "30"))
 MODEL_VERSION = os.environ.get("MODEL_VERSION", "2019-01-03")
-DEPLOYMENT_PREFIX = os.environ.get("DEPLOYMENT_PREFIX", "dev")
 
 # Model filepaths
-HPF_output_package_id_dict = os.path.join(HPF_SCORING_REGION, DEPLOYMENT_PREFIX, MODEL_VERSION,
+HPF_output_package_id_dict = os.path.join(MODEL_VERSION,
                                           "trained-model/package_id_dict.json")
-HPF_output_manifest_id_dict = os.path.join(HPF_SCORING_REGION, DEPLOYMENT_PREFIX, MODEL_VERSION,
+HPF_output_manifest_id_dict = os.path.join(MODEL_VERSION,
                                            "trained-model/manifest_id_dict.json")
 
 # Saved Model path
-HPF_MODEL_PATH = os.path.join(HPF_SCORING_REGION, DEPLOYMENT_PREFIX, MODEL_VERSION,
+HPF_MODEL_PATH = os.path.join(MODEL_VERSION,
                               "intermediate-model/hpf_model.pkl")
 
 # Swagger path
