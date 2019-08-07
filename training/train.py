@@ -19,7 +19,6 @@ import json
 
 AWS_S3_ACCESS_KEY_ID = os.environ.get("AWS_S3_ACCESS_KEY_ID", "")
 AWS_S3_SECRET_ACCESS_KEY = os.environ.get("AWS_S3_SECRET_ACCESS_KEY", "")
-DEPLOYMENT_PREFIX = os.environ.get("DEPLOYMENT_PREFIX", "dev")
 AWS_S3_BUCKET_NAME = os.environ.get("AWS_S3_BUCKET_NAME", "")
 MODEL_VERSION = os.environ.get("MODEL_VERSION", "2019-01-03")
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")

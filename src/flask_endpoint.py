@@ -12,8 +12,8 @@ from src.scoring.hpf_scoring import HPFScoring
 from src.utils import convert_string2bool_env
 from src.config import (AWS_S3_ACCESS_KEY_ID,
                         AWS_S3_SECRET_ACCESS_KEY,
-                        AWS_S3_BUCKET_NAME,
                         HPF_SCORING_REGION,
+                        AWS_S3_BUCKET_NAME,
                         USE_CLOUD_SERVICES,
                         SWAGGER_YAML_PATH)
 
