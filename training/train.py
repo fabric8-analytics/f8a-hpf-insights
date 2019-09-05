@@ -53,7 +53,7 @@ def load_data(s3_client):
 
 def check_style(data_dict):
     """Check the format of manifest file."""
-    if data_dict.get("ecosystem") == str("maven"):
+    if data_dict.get("ecosystem") == "maven":
         package_dict = data_dict.get("package_dict")
         if package_dict:
             try:
@@ -69,7 +69,7 @@ def check_style(data_dict):
             logger.error("ERROR - manifest.json is not in proper format.")
             return False
     else:
-        logger.error("ERROR - You are not training for maven.")
+        logger.info("Skipping because the ecosystem is not maven.")
         return False
 
 
