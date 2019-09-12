@@ -35,7 +35,7 @@ def load_S3():
                          aws_secret_access_key=AWS_S3_SECRET_ACCESS_KEY)
     s3_object.connect()
     if s3_object.is_connected():
-        logger.info("S3 connection established.")
+        logger.info("S3 connection established for {} bucket".format(AWS_S3_BUCKET_NAME))
         return s3_object
     else:
         raise Exception
@@ -44,6 +44,7 @@ def load_S3():
 def load_data(s3_client):
     """Load data from s3 bucket."""
     HPF_output_raw_dict = os.path.join(MODEL_VERSION, "data/manifest.json")
+    logger.info("Reading Manifest file for {} version".format(MODEL_VERSION))
     raw_data_dict_ = s3_client.read_json_file(HPF_output_raw_dict)
     if raw_data_dict_ is None:
         raise Exception("manifest.json not found")
