@@ -27,19 +27,10 @@ objects:
         - command:
           - /bin/entrypoint.sh
           env:
-          - name: DEPLOYMENT_PREFIX
-            valueFrom:
-              configMapKeyRef:
-                name: bayesian-config
-                key: deployment-prefix
           - name: SERVICE_PORT
             value: "6006"
           - name: SERVICE_TIMEOUT
             value: "900"
-          - name: HPF_SCORING_REGION
-            value: "${HPF_SCORING_REGION}"
-          - name: AWS_S3_ENDPOINT_URL
-            value: ""
           - name: AWS_S3_BUCKET_NAME
             valueFrom:
               secretKeyRef:
@@ -62,12 +53,12 @@ objects:
           - name: AWS_S3_ACCESS_KEY_ID
             valueFrom:
               secretKeyRef:
-                key: aws-access-key-id
+                key: aws_access_key_id
                 name: hpf-maven-insights-s3
           - name: AWS_S3_SECRET_ACCESS_KEY
             valueFrom:
               secretKeyRef:
-                key: aws-secret-access-key
+                key: aws_secret_access_key
                 name: hpf-maven-insights-s3
           name: f8a-hpf-insights
           image: "${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${IMAGE_TAG}"
