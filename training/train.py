@@ -382,8 +382,8 @@ def train_model():
     data = load_data(s3_obj)
     if check_style(data):
         hyper_params = load_hyper_params() or {}
-        LOWER_LIMIT = int(hyper_params.get('lower_limit', 13))
-        UPPER_LIMIT = int(hyper_params.get('upper_limit', 15))
+        LOWER_LIMIT = int(hyper_params.get('lower_limit', 2))
+        UPPER_LIMIT = int(hyper_params.get('upper_limit', 38))
         LATENT_FACTOR = int(hyper_params.get('latent_factor', 300))
         logger.info("Lower limit {}, Upper limit {} and latent factor {} are used."
                     .format(LOWER_LIMIT, UPPER_LIMIT, LATENT_FACTOR))
