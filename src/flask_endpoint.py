@@ -16,6 +16,7 @@ from src.config import (AWS_S3_ACCESS_KEY_ID,
                         AWS_S3_BUCKET_NAME,
                         USE_CLOUD_SERVICES,
                         SWAGGER_YAML_PATH)
+from raven.contrib.flask import Sentry
 
 # Turn off the annoying boto logs unless some error occurs
 logging.getLogger('botocore').setLevel(logging.ERROR)
@@ -41,6 +42,9 @@ def setup_logging(flask_app):  # pragma: no cover
 app = connexion.FlaskApp(__name__)
 setup_logging(app.app)
 CORS(app.app)
+SENTRY_DSN = os.environ.get("SENTRY_DSN", "")
+sentry = Sentry(app, dsn=SENTRY_DSN, logging=True, level=logging.ERROR)
+app.logger.info('App initialized, ready to roll...')
 
 global scoring_status
 global scoring_object
@@ -117,6 +121,13 @@ def hpf_model_details():
     else:  # pragma: no cover
         return flask.jsonify({"Error": "No scoring region provided"})
 
+
+def log_it(func):
+    """Func decorator for logging."""
+    def inner1(*args, **kwargs):
+        app.logger.info("Executed {}".format(func.__name__))
+        return func(*args, **kwargs)
+    return inner1
 
 app.add_api(SWAGGER_YAML_PATH)
 

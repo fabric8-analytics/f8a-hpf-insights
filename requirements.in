@@ -7,3 +7,4 @@ gunicorn
 scipy
 connexion
 codecov
+raven[flask]
