@@ -129,6 +129,7 @@ def log_it(func):
         return func(*args, **kwargs)
     return inner1
 
+
 app.add_api(SWAGGER_YAML_PATH)
 
 if __name__ == "__main__":
