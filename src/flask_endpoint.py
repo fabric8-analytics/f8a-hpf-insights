@@ -122,14 +122,6 @@ def hpf_model_details():
         return flask.jsonify({"Error": "No scoring region provided"})
 
 
-def log_it(func):
-    """Func decorator for logging."""
-    def inner1(*args, **kwargs):
-        app.logger.info("Executed {}".format(func.__name__))
-        return func(*args, **kwargs)
-    return inner1
-
-
 app.add_api(SWAGGER_YAML_PATH)
 
 if __name__ == "__main__":
