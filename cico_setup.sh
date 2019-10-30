@@ -24,6 +24,7 @@ prep() {
     yum -y update
     yum -y install docker git
     systemctl start docker
+    yum install -y python3-devel
 }
 
 build_image() {
