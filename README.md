@@ -196,3 +196,5 @@ Code coverage is reported via the codecov.io. The results can be seen on the fol
 * [Pushing Image to Docker Hub](https://ropenscilabs.github.io/r-docker-tutorial/04-Dockerhub.html)
 * [PAPER: Scalable Recommendation with Poisson Factorization](https://arxiv.org/abs/1311.1704)
 * [PAPER: Hierarchical Compound Poisson Factorization](https://arxiv.org/abs/1604.03853)
+
+***
