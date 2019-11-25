@@ -36,3 +36,7 @@ urllib3==1.23             # via requests
 werkzeug==0.14.1          # via flask, tensorflow-tensorboard
 wheel==0.31.1             # via tensorflow, tensorflow-tensorboard
 codecov
+raven[flask]==6.10.0
+contextlib2==0.5.5        # via raven
+blinker==1.4              # via raven
+

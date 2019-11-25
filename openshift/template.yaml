@@ -52,6 +52,11 @@ objects:
           secretKeyRef:
             key: aws_secret_access_key
             name: hpf-maven-insights-s3
+      - name: SENTRY_DSN
+        valueFrom:
+          secretKeyRef:
+            name: worker
+            key: sentry_dsn
       name: f8a-hpf-insights
       image: "${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${IMAGE_TAG}"
       imagePullPolicy: Always
