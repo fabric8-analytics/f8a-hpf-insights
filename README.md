@@ -195,6 +195,6 @@ Code coverage is reported via the codecov.io. The results can be seen on the fol
 * [Feedback logic](https://github.com/fabric8-analytics/f8a-hpf-insights/wiki/Feedback-Logic)
 * [Pushing Image to Docker Hub](https://ropenscilabs.github.io/r-docker-tutorial/04-Dockerhub.html)
 * [PAPER: Scalable Recommendation with Poisson Factorization](https://arxiv.org/abs/1311.1704)
-* [PAPER: Hierarchical Compound Poisson Factorization](https://arxiv.org/abs/1604.03853)
+* [PAPER: Hierarchical Compound Poisson Factorization](https://arxiv.org/abs/1604.03853) 
 
 ***
