@@ -43,8 +43,8 @@ app = connexion.FlaskApp(__name__)
 setup_logging(app.app)
 CORS(app.app)
 SENTRY_DSN = os.environ.get("SENTRY_DSN", "")
-sentry = Sentry(app, dsn=SENTRY_DSN, logging=True, level=logging.ERROR)
-app.logger.info('App initialized, ready to roll...')
+sentry = Sentry(app.app, dsn=SENTRY_DSN, logging=True, level=logging.ERROR)
+app.app.logger.info('App initialized, ready to roll...')
 
 global scoring_status
 global scoring_object
