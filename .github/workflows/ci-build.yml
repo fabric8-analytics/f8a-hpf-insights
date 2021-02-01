@@ -42,7 +42,7 @@ jobs:
     - name: VIew
       run: ls -l
     - name: Run Unit Tests
-      run: PYTHONHASHSEED=1 pytest --cov=/src/ --cov-report=xml -vv /tests/unit_tests/
+      run: PYTHONHASHSEED=1 pytest --cov=./src/ --cov-report=xml -vv ./tests/unit_tests/
     #- name: Run Unit Tests
     #  run: bash qa/runtest.sh
     - name: Upload coverage to Codecov
