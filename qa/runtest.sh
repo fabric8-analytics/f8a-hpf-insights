@@ -13,7 +13,7 @@ gc() {
 
 if [[ "$CI" -eq "0" ]];
 then
-    make docker-build-test
+    docker build --no-cache -t hpf-insights-tests -f Dockerfile.tests .
     docker run -v "$PWD:/shared:rw,Z" ${TEST_IMAGE_NAME}
     docker stop ${TEST_IMAGE_NAME}
     trap gc EXIT SIGINT
