@@ -13,7 +13,6 @@ gc() {
 
 if [[ "$CI" -eq "0" ]];
 then
-    docker build --no-cache -t quay.io/openshiftio/fabric8-analytics-f8a-hpf-insights:latest -f Dockerfile .
     docker build --no-cache -t hpf-insights-tests -f Dockerfile.tests .
     docker run -v "$PWD:/shared:rw,Z" ${TEST_IMAGE_NAME}
     docker stop ${TEST_IMAGE_NAME}
