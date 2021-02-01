@@ -35,16 +35,8 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: '3.6'
-    - name: Install virtualenv
-      run: pip install -U pip && pip install virtualenv pytest pytest-cov git+https://github.com/fabric8-analytics/fabric8-analytics-rudra#egg=rudra
-    - name: Install Dependencies
-      run: pip install -r requirements.txt
-    - name: VIew
-      run: ls -l
     - name: Run Unit Tests
-      run: PYTHONHASHSEED=1 pytest --cov=./src/ --cov-report=xml -vv ./tests/unit_tests/
-    #- name: Run Unit Tests
-    #  run: bash qa/runtest.sh
+      run: bash qa/runtest.sh
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
       with:
