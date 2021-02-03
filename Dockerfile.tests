@@ -8,6 +8,7 @@ LABEL MAINTAINER="Lucky Suman <lsuman@redhat.com>"
 ADD ./tests/ /tests
 ADD ./src /src
 ADD ./tools/ /tools
+RUN true
 ADD ./tests/scripts/entrypoint-test.sh /entrypoint-test.sh
 ADD ./.git /.git
 RUN chmod 0777 /entrypoint-test.sh
