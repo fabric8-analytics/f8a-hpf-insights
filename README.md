@@ -1,3 +1,6 @@
+![CI](https://github.com/fabric8-analytics/f8a-hpf-insights/workflows/CI/badge.svg?branch=master)
+[![codecov](https://codecov.io/gh/fabric8-analytics/f8a-hpf-insights/branch/master/graph/badge.svg?token=qi833miGbI)](https://codecov.io/gh/fabric8-analytics/f8a-hpf-insights)
+
 # f8a-hpf-insights (maven)
 **(fabric8-analytics-hpf-insights)**
 
