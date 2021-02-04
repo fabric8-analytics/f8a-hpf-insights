@@ -1,4 +1,4 @@
-FROM centos:7
+FROM registry.centos.org/centos/centos:7
 
 LABEL maintainer="Lucky Suman <lsuman@redhat.com>"
 

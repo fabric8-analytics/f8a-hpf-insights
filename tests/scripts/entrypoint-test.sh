@@ -9,7 +9,7 @@ locale charmap
 check_python_version
 
 export RADONFILESENCODING=UTF-8
-
+cd insights
 echo "*****************************************"
 echo "*** Cyclomatic complexity measurement ***"
 echo "*****************************************"
@@ -25,6 +25,5 @@ echo "*** Unit tests ***"
 echo "*****************************************"
 
 mkdir /tmp/hpf # Need to create this dir as shutil.copyfile does not create parents
-PYTHONHASHSEED=1 pytest --cov=/src/ --cov-report term-missing -vv /tests/unit_tests/
+PYTHONHASHSEED=1 pytest --cov=/src/ --cov-report=xml -vv /tests/unit_tests/
 
-codecov --token=773b7a11-8e23-4244-9047-ed3c02ff33f0
