@@ -9,7 +9,7 @@ locale charmap
 check_python_version
 
 export RADONFILESENCODING=UTF-8
-
+cd insights
 echo "*****************************************"
 echo "*** Cyclomatic complexity measurement ***"
 echo "*****************************************"
@@ -27,4 +27,3 @@ echo "*****************************************"
 mkdir /tmp/hpf # Need to create this dir as shutil.copyfile does not create parents
 PYTHONHASHSEED=1 pytest --cov=/src/ --cov-report=xml -vv /tests/unit_tests/
 
-mv coverage.xml shared
