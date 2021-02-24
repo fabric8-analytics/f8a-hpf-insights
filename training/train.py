@@ -144,18 +144,18 @@ def find_unique_manifest(package_lst):
 
 def preprocess_raw_data(raw_data_dict, lower_limit, upper_limit):
     """Preprocess raw data."""
-    all_manifest_list = raw_data_dict.get('user_input_stack', []) + \
-        raw_data_dict.get('bigquery_data', [])
+    all_manifest_list = \
+        [manifest for manifest in raw_data_dict.get('user_input_stack', [])
+            if len(manifest) > 1] + \
+        [manifest for manifest in raw_data_dict.get('bigquery_data', [])
+            if lower_limit < len(manifest) < upper_limit]
+
     unique_manifests = find_unique_manifest(all_manifest_list)
-    logger.info("Number of manifests collected = {}".format(
-        len(unique_manifests)))
-    trimmed_manifest_list = [
-        manifest for manifest in unique_manifests if lower_limit < len(manifest) < upper_limit]
-    logger.info("Number of trimmed manifest = {}". format(
-        len(trimmed_manifest_list)))
-    del all_manifest_list, unique_manifests
-    package_id_dict = generate_package_id_dict(trimmed_manifest_list)
-    manifest_id_dict = generate_manifest_id_dict(trimmed_manifest_list, package_id_dict)
+    logger.info("Number of manifests collected = {}".format(len(unique_manifests)))
+    del all_manifest_list
+
+    package_id_dict = generate_package_id_dict(unique_manifests)
+    manifest_id_dict = generate_manifest_id_dict(unique_manifests, package_id_dict)
     return package_id_dict, manifest_id_dict
 
 
