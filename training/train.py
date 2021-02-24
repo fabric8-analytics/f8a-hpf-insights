@@ -467,7 +467,7 @@ def create_git_pr(s3_client, hyper_params, deployment_type):  # pragma: no cover
                                                                       deployment_type)
 
     recall_at_30 = hyper_params['recall_at_30']
-    deployed_recall_at_30 = deployed_data['hyperparams'].get('recall_at_30', 0.55)
+    deployed_recall_at_30 = deployed_data['hyperparams'].get('recall_at_30', 0.30)
     logger.info('create_git_pr:: Deployed => Model %s, Recall %f Current => Model %s, Recall %f',
                 deployed_data['version'], deployed_recall_at_30, MODEL_VERSION, recall_at_30)
     if recall_at_30 >= deployed_recall_at_30:
