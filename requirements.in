@@ -1,10 +1,9 @@
 flask
 flask-cors
-edward==1.3.5
-tensorflow==1.4.1
 numpy
 gunicorn
-scipy
 connexion
 codecov
 raven[flask]
+ruamel.yaml
+pygithub
