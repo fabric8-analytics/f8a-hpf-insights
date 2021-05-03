@@ -107,7 +107,6 @@ ENV/
 # test cache
 .pytest_cache/
 
-config.py
 *env*/
 secret.yaml
 README.html

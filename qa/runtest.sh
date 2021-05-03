@@ -5,7 +5,7 @@ SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
 pushd "${SCRIPT_DIR}/.." > /dev/null
 
 # test coverage threshold
-COVERAGE_THRESHOLD=50
+COVERAGE_THRESHOLD=85
 
 export TERM=xterm
 TERM=${TERM:-xterm}
