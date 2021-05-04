@@ -1,9 +1,12 @@
+numpy
+pandas
 flask
 flask-cors
-numpy
-gunicorn
-connexion
-codecov
 raven[flask]
+daiquiri
+gevent
+gunicorn
+codecov
 ruamel.yaml
 pygithub
+git+https://github.com/fabric8-analytics/fabric8-analytics-rudra.git@98f5d8f6e402dfed3b9ba9385040eacbb0a12bc3#egg=rudra

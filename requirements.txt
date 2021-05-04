@@ -4,82 +4,396 @@
 #
 #    pip-compile --output-file=requirements.txt requirements.in
 #
+alabaster==0.7.12
+    # via
+    #   rudra
+    #   sphinx
+asn1crypto==0.24.0
+    # via
+    #   cryptography
+    #   rudra
+atomicwrites==1.3.0
+    # via
+    #   pytest
+    #   rudra
+attrs==18.2.0
+    # via
+    #   pytest
+    #   rudra
+aws-xray-sdk==0.95
+    # via
+    #   moto
+    #   rudra
+babel==2.6.0
+    # via
+    #   rudra
+    #   sphinx
+beautifulsoup4==4.7.1
+    # via rudra
 blinker==1.4
     # via raven
-certifi==2018.8.13
-    # via requests
-chardet==3.0.4
-    # via requests
-click==6.7
+boto3==1.7.84
     # via
-    #   clickclick
-    #   flask
-clickclick==1.2.2
-    # via connexion
+    #   moto
+    #   rudra
+boto==2.49.0
+    # via
+    #   moto
+    #   rudra
+botocore==1.10.84
+    # via
+    #   boto3
+    #   moto
+    #   rudra
+    #   s3transfer
+cachetools==3.1.0
+    # via
+    #   google-auth
+    #   rudra
+certifi==2018.11.29
+    # via
+    #   requests
+    #   rudra
+cffi==1.12.1
+    # via
+    #   cryptography
+    #   rudra
+chardet==3.0.4
+    # via
+    #   requests
+    #   rudra
+click==6.7
+    # via flask
 codecov==2.1.11
     # via -r requirements.in
-connexion==1.5.2
-    # via -r requirements.in
+cookies==2.2.1
+    # via
+    #   moto
+    #   rudra
 coverage==5.4
     # via codecov
+cryptography==2.5
+    # via
+    #   moto
+    #   rudra
+daiquiri==1.5.0
+    # via
+    #   -r requirements.in
+    #   rudra
+demjson==2.2.4
+    # via rudra
 deprecated==1.2.11
     # via pygithub
+docker-pycreds==0.4.0
+    # via
+    #   docker
+    #   rudra
+docker==3.7.0
+    # via
+    #   moto
+    #   rudra
+docutils==0.14
+    # via
+    #   botocore
+    #   rudra
+    #   sphinx
+ecdsa==0.13.3
+    # via
+    #   python-jose
+    #   rudra
 flask-cors==3.0.10
     # via -r requirements.in
 flask==1.0.2
     # via
     #   -r requirements.in
-    #   connexion
     #   flask-cors
     #   raven
+future==0.17.1
+    # via
+    #   python-jose
+    #   rudra
+gevent==21.1.2
+    # via -r requirements.in
+google-api-core==1.8.0
+    # via
+    #   google-cloud-bigquery
+    #   google-cloud-core
+    #   rudra
+google-auth==1.6.3
+    # via
+    #   google-api-core
+    #   rudra
+google-cloud-bigquery==1.10.0
+    # via rudra
+google-cloud-core==0.29.1
+    # via
+    #   google-cloud-bigquery
+    #   rudra
+google-resumable-media==0.3.2
+    # via
+    #   google-cloud-bigquery
+    #   rudra
+googleapis-common-protos==1.5.8
+    # via
+    #   google-api-core
+    #   rudra
+greenlet==1.0.0
+    # via gevent
 gunicorn==20.0.4
     # via -r requirements.in
-idna==2.7
-    # via requests
-inflection==0.3.1
-    # via connexion
+idna==2.8
+    # via
+    #   requests
+    #   rudra
+imagesize==1.1.0
+    # via
+    #   rudra
+    #   sphinx
 itsdangerous==0.24
     # via flask
-jinja2==2.11.3
-    # via flask
-jsonschema==2.6.0
+jinja2==2.10
     # via
-    #   connexion
-    #   swagger-spec-validator
-markupsafe==1.0
-    # via jinja2
-numpy==1.16.3
+    #   flask
+    #   moto
+    #   rudra
+    #   sphinx
+jmespath==0.9.3
+    # via
+    #   boto3
+    #   botocore
+    #   rudra
+jsondiff==1.1.1
+    # via
+    #   moto
+    #   rudra
+jsonpickle==1.1
+    # via
+    #   aws-xray-sdk
+    #   rudra
+lxml==4.3.2
+    # via rudra
+markupsafe==1.1.0
+    # via
+    #   jinja2
+    #   rudra
+mock==2.0.0
+    # via
+    #   moto
+    #   rudra
+more-itertools==6.0.0
+    # via
+    #   pytest
+    #   rudra
+moto==1.3.6
+    # via rudra
+numpy==1.16.1
+    # via
+    #   -r requirements.in
+    #   pandas
+    #   rudra
+    #   scipy
+packaging==19.0
+    # via
+    #   rudra
+    #   sphinx
+pandas==1.1.5
     # via -r requirements.in
+pbr==5.1.2
+    # via
+    #   mock
+    #   rudra
+pluggy==0.8.1
+    # via
+    #   pytest
+    #   rudra
+protobuf==3.7.0
+    # via
+    #   google-api-core
+    #   googleapis-common-protos
+    #   rudra
+py==1.7.0
+    # via
+    #   pytest
+    #   rudra
+pyaml==18.11.0
+    # via
+    #   moto
+    #   rudra
+pyasn1-modules==0.2.4
+    # via
+    #   google-auth
+    #   rudra
+pyasn1==0.4.5
+    # via
+    #   pyasn1-modules
+    #   rsa
+    #   rudra
+pycodestyle==2.5.0
+    # via rudra
+pycparser==2.19
+    # via
+    #   cffi
+    #   rudra
+pycryptodome==3.7.3
+    # via
+    #   python-jose
+    #   rudra
 pygithub==1.54.1
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   rudra
+pygments==2.3.1
+    # via
+    #   rudra
+    #   sphinx
 pyjwt==1.7.1
     # via pygithub
-pyyaml==5.4.1
+pyparsing==2.3.1
     # via
-    #   clickclick
-    #   connexion
-    #   swagger-spec-validator
+    #   packaging
+    #   rudra
+pytest==4.3.0
+    # via rudra
+python-dateutil==2.8.0
+    # via
+    #   botocore
+    #   moto
+    #   pandas
+    #   rudra
+python-jose==2.0.2
+    # via
+    #   moto
+    #   rudra
+pytz==2018.9
+    # via
+    #   babel
+    #   google-api-core
+    #   moto
+    #   pandas
+    #   rudra
+pyyaml==4.2b4
+    # via
+    #   pyaml
+    #   rudra
 raven[flask]==6.10.0
     # via -r requirements.in
-requests==2.25.1
+requests-futures==0.9.9
+    # via rudra
+requests==2.21.0
     # via
+    #   aws-xray-sdk
     #   codecov
-    #   connexion
+    #   docker
+    #   google-api-core
+    #   moto
     #   pygithub
-ruamel.yaml.clib==0.2.2
-    # via ruamel.yaml
-ruamel.yaml==0.16.12
-    # via -r requirements.in
-six==1.11.0
+    #   requests-futures
+    #   responses
+    #   rudra
+    #   sphinx
+responses==0.10.5
     # via
-    #   connexion
+    #   moto
+    #   rudra
+rsa==4.0
+    # via
+    #   google-auth
+    #   rudra
+ruamel.yaml==0.15.88
+    # via
+    #   -r requirements.in
+    #   rudra
+git+https://github.com/fabric8-analytics/fabric8-analytics-rudra.git@98f5d8f6e402dfed3b9ba9385040eacbb0a12bc3#egg=rudra
+    # via -r requirements.in
+s3transfer==0.1.13
+    # via
+    #   boto3
+    #   rudra
+scipy==1.2.1
+    # via rudra
+six==1.12.0
+    # via
+    #   cryptography
+    #   docker
+    #   docker-pycreds
     #   flask-cors
-    #   swagger-spec-validator
-swagger-spec-validator==2.3.1
-    # via connexion
-urllib3==1.26.3
-    # via requests
+    #   google-api-core
+    #   google-auth
+    #   google-resumable-media
+    #   mock
+    #   moto
+    #   packaging
+    #   protobuf
+    #   pytest
+    #   python-dateutil
+    #   python-jose
+    #   responses
+    #   rudra
+    #   websocket-client
+snowballstemmer==1.2.1
+    # via
+    #   rudra
+    #   sphinx
+soupsieve==1.8
+    # via
+    #   beautifulsoup4
+    #   rudra
+sphinx-rtd-theme==0.4.3
+    # via rudra
+sphinx==2.0.0
+    # via
+    #   rudra
+    #   sphinx-rtd-theme
+sphinxcontrib-applehelp==1.0.1
+    # via
+    #   rudra
+    #   sphinx
+sphinxcontrib-devhelp==1.0.1
+    # via
+    #   rudra
+    #   sphinx
+sphinxcontrib-htmlhelp==1.0.1
+    # via
+    #   rudra
+    #   sphinx
+sphinxcontrib-jsmath==1.0.1
+    # via
+    #   rudra
+    #   sphinx
+sphinxcontrib-qthelp==1.0.2
+    # via
+    #   rudra
+    #   sphinx
+sphinxcontrib-serializinghtml==1.1.1
+    # via
+    #   rudra
+    #   sphinx
+urllib3==1.24.2
+    # via
+    #   requests
+    #   rudra
+websocket-client==0.54.0
+    # via
+    #   docker
+    #   rudra
 werkzeug==0.15.3
-    # via flask
-wrapt==1.12.1
-    # via deprecated
+    # via
+    #   flask
+    #   moto
+    #   rudra
+wrapt==1.11.1
+    # via
+    #   aws-xray-sdk
+    #   deprecated
+    #   rudra
+xmltodict==0.12.0
+    # via
+    #   moto
+    #   rudra
+zope.event==4.5.0
+    # via gevent
+zope.interface==5.4.0
+    # via gevent
+
+# The following packages are considered to be unsafe in a requirements file:
+# setuptools
