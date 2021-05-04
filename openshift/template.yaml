@@ -8,91 +8,94 @@ metadata:
     description: f8a-hpf-insights
 objects:
 - apiVersion: v1
-  kind: Pod
+  kind: DeploymentConfig
   metadata:
     labels:
       service: f8a-hpf-insights-${HPF_SCORING_REGION}
     name: f8a-hpf-insights-${HPF_SCORING_REGION}
   spec:
-    restartPolicy: Never
-    containers:
-    - command:
-      - /bin/entrypoint.sh
-      env:
-      - name: DEPLOYMENT_PREFIX
-        valueFrom:
-          configMapKeyRef:
-            name: bayesian-config
-            key: deployment-prefix
-      - name: SERVICE_PORT
-        value: "6006"
-      - name: SERVICE_TIMEOUT
-        value: "900"
-      - name: AWS_S3_BUCKET_NAME
-        valueFrom:
-          secretKeyRef:
-            key: bucket
-            name: hpf-maven-insights-s3
-      - name: MODEL_VERSION
-        value: "${{MODEL_VERSION}}"
-      - name: FLASK_LOGGING_LEVEL
-        value: ${FLASK_LOGGING_LEVEL}
-      - name: MAX_COMPANION_REC_COUNT
-        value: "${MAX_COMPANION_REC_COUNT}"
-      - name: MIN_REC_CONFIDENCE
-        value: "${MIN_REC_CONFIDENCE}"
-      - name: UNKNOWN_PACKAGES_THRESHOLD
-        value: "${UNKNOWN_PACKAGES_THRESHOLD}"
-      - name: USE_CLOUD_SERVICES
-        value: "${{USE_CLOUD_SERVICES}}"
-      - name: AWS_S3_ACCESS_KEY_ID
-        valueFrom:
-          secretKeyRef:
-            key: aws_access_key_id
-            name: hpf-maven-insights-s3
-      - name: AWS_S3_SECRET_ACCESS_KEY
-        valueFrom:
-          secretKeyRef:
-            key: aws_secret_access_key
-            name: hpf-maven-insights-s3
-      - name: SENTRY_DSN
-        valueFrom:
-          secretKeyRef:
-            name: worker
-            key: sentry_dsn
-      name: f8a-hpf-insights
-      image: "${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${IMAGE_TAG}"
-      imagePullPolicy: Always
-      ports:
-      - containerPort: 6006
-      livenessProbe:
-        httpGet:
-          path: /
-          port: 6006
-        initialDelaySeconds: 30
-        periodSeconds: 30
-        timeoutSeconds: 30
-      readinessProbe:
-        httpGet:
-          path: /
-          port: 6006
-        initialDelaySeconds: 30
-        periodSeconds: 30
-        timeoutSeconds: 30
-      resources:
-        requests:
-          cpu: ${CPU_REQUEST}
-          memory: ${MEMORY_REQUEST}
-        limits:
-          cpu: ${CPU_LIMIT}
-          memory: ${MEMORY_LIMIT}
-      # Added so that .npy can be downloaded from s3 and saved under /tmp. Gives write permission error otherwise.
-      volumeMounts:
-      - name: s3-data
-        mountPath: /tmp
-    volumes:
-    - name: s3-data
-      emptyDir: {}
+    replicas: "${{REPLICAS}}"
+    selector:
+      service: f8a-hpf-insights-${HPF_SCORING_REGION}
+    template:
+      metadata:
+        labels:
+          service: f8a-hpf-insights-${HPF_SCORING_REGION}
+      spec:
+        restartPolicy: ${RESTART_POLICY}
+        containers:
+        - command:
+          - /bin/entrypoint.sh
+          env:
+          - name: DEPLOYMENT_PREFIX
+            valueFrom:
+              configMapKeyRef:
+                name: bayesian-config
+                key: deployment-prefix
+          - name: SERVICE_PORT
+            value: "6006"
+          - name: SERVICE_TIMEOUT
+            value: "900"
+          - name: AWS_S3_BUCKET_NAME
+            valueFrom:
+              secretKeyRef:
+                key: bucket
+                name: hpf-maven-insights-s3
+          - name: MODEL_VERSION
+            value: "${{MODEL_VERSION}}"
+          - name: FLASK_LOGGING_LEVEL
+            value: ${FLASK_LOGGING_LEVEL}
+          - name: MAX_COMPANION_REC_COUNT
+            value: "${MAX_COMPANION_REC_COUNT}"
+          - name: UNKNOWN_PACKAGES_THRESHOLD
+            value: "${UNKNOWN_PACKAGES_THRESHOLD}"
+          - name: MIN_REC_CONFIDENCE
+            value: "${MIN_REC_CONFIDENCE}"
+          - name: USE_CLOUD_SERVICES
+            value: "${{USE_CLOUD_SERVICES}}"
+          - name: AWS_S3_ACCESS_KEY_ID
+            valueFrom:
+              secretKeyRef:
+                key: aws_access_key_id
+                name: hpf-maven-insights-s3
+          - name: AWS_S3_SECRET_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                key: aws_secret_access_key
+                name: hpf-maven-insights-s3
+          name: f8a-hpf-insights
+          image: "${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${IMAGE_TAG}"
+          imagePullPolicy: Always
+          ports:
+          - containerPort: 6006
+          livenessProbe:
+            httpGet:
+              path: /api/v1/liveness
+              port: 6006
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /api/v1/readiness
+              port: 6006
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 30
+          resources:
+            requests:
+              cpu: ${CPU_REQUEST}
+              memory: ${MEMORY_REQUEST}
+            limits:
+              cpu: ${CPU_LIMIT}
+              memory: ${MEMORY_LIMIT}
+          # Added so that .npy can be downloaded from s3 and saved under /tmp. Gives write permission error otherwise.
+          volumeMounts:
+          - name: s3-data
+            mountPath: /tmp
+        volumes:
+        - name: s3-data
+          emptyDir: {}
 - apiVersion: v1
   kind: Service
   metadata:
@@ -111,25 +114,25 @@ parameters:
   displayName: CPU request
   required: true
   name: CPU_REQUEST
-  value: "1000m"
+  value: "100m"
 
 - description: CPU limit
   displayName: CPU limit
   required: true
   name: CPU_LIMIT
-  value: "1500m"
+  value: "700m"
 
 - description: Memory request
   displayName: Memory request
   required: true
   name: MEMORY_REQUEST
-  value: "1536Mi"
+  value: "200Mi"
 
 - description: Memory limit
   displayName: Memory limit
   required: true
   name: MEMORY_LIMIT
-  value: "1536Mi"
+  value: "1Gi"
 
 - description: Docker registry where the image is
   displayName: Docker registry
@@ -141,7 +144,7 @@ parameters:
   displayName: Docker image
   required: true
   name: DOCKER_IMAGE
-  value: "openshiftio/rhel-fabric8-analytics-f8a-hpf-insights"
+  value: "app-sre/fabric8-analytics-f8a-hpf-insights"
 
 - description: Image tag
   displayName: Image tag
@@ -149,11 +152,23 @@ parameters:
   name: IMAGE_TAG
   value: "latest"
 
+- description: HPF Scoring Region - pypi or maven
+  displayName: HPF Scoring Region
+  required: true
+  name: HPF_SCORING_REGION
+  value: "maven"
+
 - description: "Flask logging level (see: https://docs.python.org/3/library/logging.html#levels)"
   displayName: Flask logging level
   required: false
   name: FLASK_LOGGING_LEVEL
   value: "INFO"
+
+- description: Number of deployment replicas
+  displayName: Number of deployment replicas
+  required: true
+  name: REPLICAS
+  value: "1"
 
 - description: Ratio of known/unknown packages
   displayName: Ratio of known/unknown packages
@@ -173,6 +188,12 @@ parameters:
   name: MIN_REC_CONFIDENCE
   value: "30"
 
+- description: Restart policy
+  displayName: Restart policy
+  required: true
+  name: RESTART_POLICY
+  value: "Always"
+
 - description: Use S3 or Local datastore
   displayName: USe S3 or Local datastore
   required: true
@@ -184,4 +205,3 @@ parameters:
   required: true
   name: MODEL_VERSION
   value: "2019-01-03"
-
