@@ -17,6 +17,7 @@ RUN pip3 install --no-cache-dir -r /opt/app-root/requirements.txt
 RUN pip3 install --no-cache-dir Cython==0.29.1 && pip3 install --no-cache-dir hpfrec==0.2.2.9 && pip3 install --no-cache-dir connexion==2.7.0
 
 COPY ./src /opt/app-root/src/src
+COPY ./tests/test_data /opt/app-root/src/tests/test_data
 
 ADD ./entrypoint.sh /bin/entrypoint.sh
 
