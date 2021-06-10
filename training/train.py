@@ -420,6 +420,7 @@ def read_deployed_data(upstream_repo, s3_client, deployment_type):
     deployed_version = get_deployed_model_version(yaml_dict, deployment_type)
     deployed_file_path = f'{deployed_version}/intermediate-model/hyperparameters.json'
     deployed_hyperparams = s3_client.read_json_file(deployed_file_path)
+    if deployed_hyperparams is None: deployed_hyperparams = {}
 
     deployed_data = {
         'version': deployed_version,
